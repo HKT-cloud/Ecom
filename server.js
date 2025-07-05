@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const connectDB = require('./db');
-const userRoutes = require('./Routes/user.routes');
+const userRoutes = require('./Holder1/Controller/user.controller');
 const otpRoutes = require('./Holder1/Routes/otp.routes');
 
 const app = express();
