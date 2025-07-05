@@ -4,12 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "preinstall": "rm -rf node_modules yarn.lock",
-    "install": "yarn",
+    "preinstall": "rm -rf node_modules package-lock.json",
     "dev": "vite",
-    "build": "yarn build",
+    "build": "npm run build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "npm run preview --port $PORT"
   },
   "proxy": {
     "/api": {
