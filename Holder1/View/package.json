@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run build",
     "lint": "eslint .",
-    "preview": "vite preview --port $PORT"
+    "preview": "npm run preview"
   },
   "dependencies": {
     "vite": "^5.4.14",
