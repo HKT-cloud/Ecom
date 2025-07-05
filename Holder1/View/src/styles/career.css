@@ -1,0 +1,293 @@
+:root {
+  --primary-color: #DE3163;
+  --text-color: #fff;
+}
+
+.career-page {
+  background-color: black;
+  color: #fff;
+  min-height: 100vh;
+  padding: 4rem 0;
+}
+
+.page-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+  background: linear-gradient(135deg, var(--primary-color) 0%, #fff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 6rem;
+  margin-bottom: 2rem;
+  color: var(--text-color);
+}
+
+.chro-message {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.message-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid var(--primary-color);
+  border-radius: 10px;
+  padding: 2.5rem;
+  margin: 2rem auto;
+  max-width: 800px;
+}
+
+.message-text {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+  margin-bottom: 2rem;
+}
+
+.chro-signature {
+  text-align: right;
+  margin-top: 2rem;
+}
+
+.chro-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.chro-title {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.career-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 2.5rem;
+}
+
+.employee-speak-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 2.5rem;
+  margin-top: 3rem;
+}
+
+.employee-testimonial {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid var(--primary-color);
+  border-radius: 10px;
+  padding: 2rem;
+  margin-top: 2rem;
+  transition: all 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.employee-testimonial::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  transition: 0.5s;
+}
+
+.employee-testimonial.is-transitioning::before {
+  left: 100%;
+}
+
+.testimonial-content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.testimonial-text {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.5s ease;
+}
+
+.testimonial-text.is-transitioning {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.testimonial-author {
+  margin-top: 1.5rem;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.5s ease;
+}
+
+.testimonial-author.is-transitioning {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.author-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.author-role {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .employee-testimonial {
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  
+  .testimonial-text {
+    font-size: 1rem;
+  }
+  
+  .author-name {
+    font-size: 1rem;
+  }
+  
+  .author-role {
+    font-size: 0.8rem;
+  }
+}
+
+/* Removed duplicate styles */
+/* .testimonial-content {
+  text-align: center;
+}
+
+.testimonial-text {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+
+.testimonial-author {
+  margin-top: 1.5rem;
+}
+
+.author-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.author-role {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+} */
+.testimonial-content {
+  text-align: center;
+}
+
+.testimonial-text {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+
+.testimonial-author {
+  margin-top: 1.5rem;
+}
+
+.author-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.author-role {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .career-section {
+    padding: 1.5rem;
+  }
+  
+  .employee-speak-section {
+    padding: 1.5rem;
+    margin-top: 2rem;
+  }
+  
+  .employee-testimonial {
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  
+  .testimonial-text {
+    font-size: 1rem;
+  }
+  
+  .author-name {
+    font-size: 1rem;
+  }
+  
+  .author-role {
+    font-size: 0.8rem;
+  }
+}
+
+.career-description {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 2rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+    margin-top: 3rem;
+  }
+  
+  .message-box {
+    padding: 1.5rem;
+  }
+  
+  .message-text {
+    font-size: 1rem;
+  }
+  
+  .chro-name {
+    font-size: 1.1rem;
+  }
+  
+  .career-description {
+    font-size: 1rem;
+  }
+}
