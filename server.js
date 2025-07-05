@@ -12,27 +12,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || 
-            origin === 'http://localhost:5173' ||
-            origin === 'https://ecomexpress-0dc3.onrender.com') {
-            callback(null, true);
-        } else {
-            callback(null, false);
-        }
-    },
+    origin: ['http://localhost:5173', 'https://ecomexpress-0dc3.onrender.com'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
     exposedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
-    maxAge: 86400, // 24 hours
+    maxAge: 86400,
     optionsSuccessStatus: 204
 };
 
-// Handle preflight requests globally
-app.options('*', cors());
-
-app.use(cors(corsOptions));
+app.use(cors(corsOptions));              // ✅ Set CORS
+app.options('*', cors(corsOptions));     // ✅ Preflight CORS support
 
 // Routes
 app.use('/user', userRoutes);
