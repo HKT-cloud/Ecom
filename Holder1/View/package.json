@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "preinstall": "rm -rf node_modules package-lock.json",
+    "preinstall": "rm -rf node_modules yarn.lock",
+    "install": "yarn",
     "dev": "vite",
-    "build": "vite build",
+    "build": "yarn build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
