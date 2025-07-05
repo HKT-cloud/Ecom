@@ -14,5 +14,10 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/user/, '')
       }
     }
+  },
+  preview: {
+    host: true,
+    port: process.env.PORT || 4173,
+    allowedHosts: ['ecomexpress-0dc3.onrender.com']
   }
 })
