@@ -17,7 +17,7 @@ const Login = ({ onOTPVerification }) => {
     setLoading(true);
     try {
       // First, attempt to login
-      const response = await api.post('/user/login', { email, password });
+      const response = await api.post('/login', { email, password });
       
       if (response.data.token) {
         // Store token temporarily before OTP verification

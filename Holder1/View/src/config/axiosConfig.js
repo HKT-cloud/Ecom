@@ -5,64 +5,44 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Origin': 'https://ecomexpress-0dc3.onrender.com'
+    'Accept': 'application/json'
   },
   timeout: 5000
 });
 
-// Add interceptors to handle routes
+// ✅ Clean single request interceptor
 api.interceptors.request.use(
-    (config) => {
-        // Add /user prefix to all requests
-        if (!config.url.startsWith('/user/')) {
-            config.url = '/user' + config.url;
-        }
-        return config;
-    },
-    (error) => {
-        console.error('Request error:', error);
-        return Promise.reject(error);
+  (config) => {
+    // Add /user prefix if not present
+    if (!config.url.startsWith('/user/')) {
+      config.url = '/user' + config.url;
     }
+
+    // Add Authorization token if available
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => {
+    console.error('Request error:', error);
+    return Promise.reject(error);
+  }
 );
 
-// Add response interceptor
+// ✅ Clean single response interceptor
 api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        console.error('API Error:', error);
-        return Promise.reject(error);
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error);
+    if (error.response) {
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
     }
-);
-
-// Add a request interceptor
-api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        console.error('Request error:', error);
-        return Promise.reject(error);
-    }
-);
-
-// Add a response interceptor
-api.interceptors.response.use(  
-    (response) => {
-        return response;
-    },
-    (error) => {
-        console.error('API Error:', error);
-        if (error.response) {
-            console.error('Response data:', error.response.data);
-            console.error('Response status:', error.response.status);
-        }
-        return Promise.reject(error);
-    }
+    return Promise.reject(error);
+  }
 );
 
 export default api;
