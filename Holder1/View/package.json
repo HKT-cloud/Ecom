@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview --port $PORT"
+    "preview": "vite preview --host --port $PORT"
   },
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
