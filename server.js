@@ -23,11 +23,14 @@ const corsOptions = {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-    exposedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    exposedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
     maxAge: 86400, // 24 hours
     optionsSuccessStatus: 204
 };
+
+// Handle preflight requests globally
+app.options('*', cors());
 
 app.use(cors(corsOptions));
 
