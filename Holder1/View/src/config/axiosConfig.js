@@ -5,7 +5,8 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'Origin': 'https://ecomexpress-0dc3.onrender.com'
   },
   timeout: 5000
 });

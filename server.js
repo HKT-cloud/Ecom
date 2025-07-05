@@ -13,7 +13,9 @@ app.use(express.urlencoded({ extended: true }));
 
 const corsOptions = {
     origin: function (origin, callback) {
-        if (!origin || origin === 'http://localhost:5173') {
+        if (!origin || 
+            origin === 'http://localhost:5173' ||
+            origin === 'https://ecomexpress-0dc3.onrender.com') {
             callback(null, true);
         } else {
             callback(null, false);
