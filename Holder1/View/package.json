@@ -6,9 +6,9 @@
   "scripts": {
     "preinstall": "rm -rf node_modules package-lock.json",
     "dev": "vite",
-    "build": "npm run build",
+    "build": "vite build",
     "lint": "eslint .",
-    "preview": "npm run preview --port $PORT"
+    "preview": "vite preview --port $PORT"
   },
   "proxy": {
     "/api": {
