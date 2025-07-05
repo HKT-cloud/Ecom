@@ -10,44 +10,23 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS configuration for production
-const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || origin === 'https://ecomexpress-0dc3.onrender.com') {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept'],
-    exposedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept'],
-    maxAge: 86400,
-    optionsSuccessStatus: 204
-};
-
-// Apply CORS globally
-app.use(cors(corsOptions));
-
-// Add request logging
-app.use((req, res, next) => {
-    console.log(`[${req.method}] ${req.path}`);
-    next();
+// Global OPTIONS handler
+app.options('*', (req, res) => {
+    res.header('Access-Control-Allow-Origin', 'https://ecomexpress-0dc3.onrender.com');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, X-Requested-With, Accept');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400');
+    res.sendStatus(204);
 });
 
-// Global error handler
-app.use((err, req, res, next) => {
-    console.error('Global error:', err);
-    console.error('Stack:', err.stack);
-    console.error('Request URL:', req.originalUrl);
-    console.error('Request method:', req.method);
-    
-    res.status(500).json({
-        success: false,
-        message: 'Internal server error',
-        error: err.message || 'An unexpected error occurred'
-    });
+// CORS middleware
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'https://ecomexpress-0dc3.onrender.com');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, X-Requested-With, Accept');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    next();
 });
 
 // Routes
@@ -58,7 +37,6 @@ app.use('/user/otp', otpRoutes);
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
-        console.log('CORS configured for:', corsOptions.origin);
     });
 }).catch(err => {
     console.error('MongoDB connection error:', err);

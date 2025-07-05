@@ -5,7 +5,8 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'Origin': 'https://ecomexpress-0dc3.onrender.com'
   },
   timeout: 5000
 });
@@ -21,6 +22,15 @@ api.interceptors.request.use(
     },
     (error) => {
         console.error('Request error:', error);
+        return Promise.reject(error);
+    }
+);
+
+// Add response interceptor
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        console.error('API Error:', error);
         return Promise.reject(error);
     }
 );
