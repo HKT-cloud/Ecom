@@ -1,28 +1,28 @@
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./db');
-const userRoutes = require('./Holder1/Routes/user.routes');
+const { login, signup, logout } = require('./Holder1/Controller/user.controller');
 const otpRoutes = require('./Holder1/Routes/otp.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configure CORS
-const corsOptions = {
+// CORS configuration
+app.use(cors({
     origin: 'https://ecomexpress-0dc3.onrender.com',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
     maxAge: 86400
-};
-
-app.use(cors(corsOptions));
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/user', userRoutes);
+app.post('/user/login', login);
+app.post('/user/signup', signup);
+app.get('/user/logout', logout);
 app.use('/user/otp', otpRoutes);
 
 // MongoDB connection

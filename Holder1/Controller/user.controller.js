@@ -1,12 +1,10 @@
-const express = require('express');
-const router = express.Router();
 const UserModel = require("../Module/user.model");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 
 // Login handler
-exports.login = async (req, res) => {
+const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         
