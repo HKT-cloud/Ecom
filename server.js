@@ -116,19 +116,13 @@ connectDB(MONGODB_URI)
         console.log('Connected to MongoDB');
         app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
+            console.log('MongoDB Connected: ✅ Connected');
+        }).on('error', (error) => {
+            console.error('Server error:', error);
+            process.exit(1);
         });
     })
     .catch((error) => {
         console.error('MongoDB connection error:', error);
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-        console.log('MongoDB Connected: ✅ Connected');
-    }).on('error', (error) => {
-        console.error('Server error:', error);
         process.exit(1);
     });
-}).catch((err) => {
-    console.error('MongoDB connection error:', err);
-    console.error('MongoDB connection error details:', err.stack);
-    process.exit(1);
-});
