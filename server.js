@@ -15,11 +15,17 @@ const corsOptions = {
     origin: ['http://localhost:5173', 'https://ecomexpress-0dc3.onrender.com'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
-    exposedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Type', 'Authorization'],
     maxAge: 86400,
     optionsSuccessStatus: 204
 };
+
+// Add request logging
+app.use((req, res, next) => {
+    console.log(`[${req.method}] ${req.path}`);
+    next();
+});
 
 app.use(cors(corsOptions));              // ✅ Set CORS
 app.options('*', cors(corsOptions));     // ✅ Preflight CORS support

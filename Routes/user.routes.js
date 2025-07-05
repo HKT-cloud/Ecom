@@ -6,6 +6,11 @@ const { v4: uuidv4 } = require('uuid');
 
 const router = express.Router();
 
+// Handle OPTIONS requests for all routes
+router.options('*', (req, res) => {
+    res.sendStatus(204);
+});
+
 // Signup route
 router.post('/signup', async (req, res) => {
     try {
