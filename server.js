@@ -7,6 +7,10 @@ const otpRoutes = require('./Holder1/Routes/otp.routes');
 
 const app = express();
 
+// Set up environment
+const PORT = process.env.PORT || 3000;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ecomexpress';
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -38,6 +42,8 @@ app.use('/user/otp', otpRoutes); // Add OTP routes under user namespace
 app.use((err, req, res, next) => {
     console.error('Error:', err);
     console.error('Error stack:', err.stack);
+    console.error('Request URL:', req.originalUrl);
+    console.error('Request method:', req.method);
     
     // Check if error is a known type
     if (err.name === 'ValidationError') {
@@ -49,12 +55,41 @@ app.use((err, req, res, next) => {
         });
     }
 
+    // Handle other errors
+    res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: err.message
+    });
+});
+
+// MongoDB connection
+connectDB(MONGODB_URI)
+    .then(() => {
+        console.log('Connected to MongoDB');
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    })
+    .catch((error) => {
+        console.error('MongoDB connection error:', error);
+        process.exit(1);
+    });
     // Handle JWT errors
     if (err.name === 'JsonWebTokenError') {
         return res.status(401).json({
             success: false,
             message: 'Invalid token',
-            error: 'Invalid or expired token'
+            error: err.message
+        });
+    }
+
+    // Handle token expiration
+    if (err.name === 'TokenExpiredError') {
+        return res.status(401).json({
+            success: false,
+            message: 'Token expired',
+            error: err.message
         });
     }
 
@@ -75,9 +110,16 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Start server after MongoDB connection is established
-connectDB().then(() => {
-    const PORT = process.env.PORT || 3000;
+// MongoDB connection
+connectDB(MONGODB_URI)
+    .then(() => {
+        console.log('Connected to MongoDB');
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    })
+    .catch((error) => {
+        console.error('MongoDB connection error:', error);
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
         console.log('MongoDB Connected: ✅ Connected');
