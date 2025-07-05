@@ -10,6 +10,21 @@ const api = axios.create({
   timeout: 5000
 });
 
+// Add interceptors to handle routes
+api.interceptors.request.use(
+    (config) => {
+        // Add /user prefix to all requests
+        if (!config.url.startsWith('/user/')) {
+            config.url = '/user' + config.url;
+        }
+        return config;
+    },
+    (error) => {
+        console.error('Request error:', error);
+        return Promise.reject(error);
+    }
+);
+
 // Add a request interceptor
 api.interceptors.request.use(
     (config) => {
