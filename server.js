@@ -7,27 +7,19 @@ const otpRoutes = require('./Holder1/Routes/otp.routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Configure CORS
+const corsOptions = {
+    origin: 'https://ecomexpress-0dc3.onrender.com',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    maxAge: 86400
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Global OPTIONS handler
-app.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', 'https://ecomexpress-0dc3.onrender.com');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, X-Requested-With, Accept');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Max-Age', '86400');
-    res.sendStatus(204);
-});
-
-// CORS middleware
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'https://ecomexpress-0dc3.onrender.com');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, X-Requested-With, Accept');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    next();
-});
 
 // Routes
 app.use('/user', userRoutes);
