@@ -1,12 +1,11 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/user', // ✅ This matches backend routing
+  baseURL: `${import.meta.env.VITE_API_URL}/user`,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-    // ❌ DO NOT include 'Origin' header manually
   },
   timeout: 5000
 });
