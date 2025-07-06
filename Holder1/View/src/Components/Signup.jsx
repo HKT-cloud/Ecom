@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Alert, Spinner } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
-import api from '../config/axiosConfig';
-import '../styles/login-page.css';
+import { signup, sendOTP } from '../config/axiosConfig';
+import '../styles/signup-page.css';
 
 const Signup = ({ onOTPVerification }) => {
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ const Signup = ({ onOTPVerification }) => {
     setLoading(true);
     try {
       // First, attempt to register
-      const response = await api.post('/signup', { 
+      const response = await signup({ 
         email, 
         password,
         fullName
@@ -74,7 +74,7 @@ const Signup = ({ onOTPVerification }) => {
         }));
         
         // Send OTP for verification
-        await api.post('/otp/send-otp', { email, purpose: 'signup' });
+        await sendOTP({ email, purpose: 'signup' });
         
         // Trigger OTP verification
         onOTPVerification(email, 'signup');
