@@ -1,7 +1,6 @@
 const UserModel = require("../Module/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { v4: uuidv4 } = require("uuid");
 
 // ✅ Login handler
 const login = async (req, res) => {
@@ -88,9 +87,8 @@ const logout = (req, res) => {
     }
 };
 
-// ✅ Export all handlers
 module.exports = {
     login,
     signup,
-    logout,
+    logout
 };
