@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import { signup, sendOTP } from '../config/axiosConfig';
-import '../../styles/signup-page.css';
+import '../../../styles/signup-page.css';
 
 const Signup = ({ onOTPVerification }) => {
   const navigate = useNavigate();

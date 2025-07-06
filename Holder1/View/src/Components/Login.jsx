@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import { login, sendOTP } from '../config/axiosConfig';
-import '../../styles/login-page.css';
+import '../../../styles/login-page.css';
 
 const Login = ({ onOTPVerification }) => {
   const [email, setEmail] = useState('');
