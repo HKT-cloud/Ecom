@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./db');
-const userRoutes = require('./Routes/user.routes');
-const otpRoutes = require('./Routes/otp.routes');
+const userRoutes = require('./Holder1/Routes/user.routes');
+const otpRoutes = require('./Holder1/Routes/otp.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
