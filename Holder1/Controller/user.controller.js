@@ -74,20 +74,64 @@ const signup = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
+        // Validate required fields
         if (!name || !email || !password) {
-            return res.status(400).json({ message: "Please fill all fields" });
+            return res.status(400).json({ 
+                message: "Validation error",
+                error: "All fields (name, email, password) are required"
+            });
         }
 
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ 
+                message: "Validation error",
+                error: "Please provide a valid email address"
+            });
+        }
+
+        // Validate password strength
+        if (password.length < 6) {
+            return res.status(400).json({ 
+                message: "Validation error",
+                error: "Password must be at least 6 characters long"
+            });
+        }
+
+        // Check if user already exists
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: "Email already registered" });
+            return res.status(400).json({ 
+                message: "Email already registered",
+                error: "This email is already in use"
+            });
         }
 
-        const hash = await bcrypt.hash(password, 10);
-        const user = await UserModel.create({ name, email, password: hash });
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Create new user
+        const user = new UserModel({
+            name,
+            email,
+            password: hashedPassword
+        });
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || "secret", {
-            expiresIn: "24h",
+        await user.save();
+
+        // Generate JWT token
+        const jwtSecret = process.env.JWT_SECRET || "your-secret-key-here";
+        if (!jwtSecret) {
+            console.error("JWT_SECRET not configured in environment variables");
+            return res.status(500).json({ 
+                message: "Server configuration error",
+                error: "JWT secret not configured"
+            });
+        }
+
+        const token = jwt.sign({ userId: user._id }, jwtSecret, {
+            expiresIn: "1h",
         });
 
         return res.status(201).json({
@@ -100,8 +144,17 @@ const signup = async (req, res) => {
             },
         });
     } catch (err) {
-        console.error("Signup error:", err);
-        return res.status(500).json({ message: "Server error", error: err.message });
+        console.error("Signup error:", {
+            error: err.message,
+            stack: err.stack,
+            request: req.body
+        });
+        
+        // Don't expose sensitive error details to client
+        return res.status(500).json({ 
+            message: "Internal server error",
+            error: "An unexpected error occurred"
+        });
     }
 };
 
