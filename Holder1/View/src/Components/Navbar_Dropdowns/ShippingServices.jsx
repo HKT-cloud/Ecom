@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import '../../styles/shipping-services.css';
+import '../styles/shipping-services.css';
 
 const ShippingServices = () => {
   return (

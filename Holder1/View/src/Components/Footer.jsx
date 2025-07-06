@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { Link as RouterLink } from 'react-router-dom';
-import '../styles/footer.css';
+import './styles/footer.css';
 
 const Footer = () => {
   return (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import '../../styles/sameday-delivery.css';
+import '../styles/sameday-delivery.css';
 
 const Sameday_Delivery = () => {
   return (

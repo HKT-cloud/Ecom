@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import '../../styles/heavies-and-bulkies.css';
+import '../styles/heavies-and-bulkies.css';
 
 const Heavies_And_Bulkies = () => {
   return (

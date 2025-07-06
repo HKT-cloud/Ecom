@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import '../../styles/fulfillment-services.css';
+import '../styles/fulfillment-services.css';
 
 const Fullfilments_Services = () => {
   return (

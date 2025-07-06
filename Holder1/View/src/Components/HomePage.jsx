@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/home.css';
+import './styles/home.css';
 
 const HomePage = () => {
   // Get user data from localStorage

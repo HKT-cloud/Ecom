@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
-import '../../styles/career.css';
+import '../styles/career.css';
 
 const Career = () => {
   const testimonials = [

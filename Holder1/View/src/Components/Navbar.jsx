@@ -4,8 +4,8 @@ import { Container, Navbar as BsNavbar, Nav, Dropdown, Offcanvas } from 'react-b
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { motion } from 'framer-motion';
-import '../styles/navbar.css';
-import '../styles/login-page.css';
+import './styles/navbar.css';
+import './styles/login-page.css';
 
 const Navbar = ({ onOTPVerification }) => {
   const navigate = useNavigate();
