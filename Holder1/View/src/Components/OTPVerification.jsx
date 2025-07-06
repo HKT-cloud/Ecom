@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Container, Row, Col, Alert } from 'react-bootstrap'
 import api from '../config/axiosConfig'
-import '../styles/login-page.css'
+import './styles/login-page.css'
 
 const OTPVerification = ({ email, purpose, onVerified }) => {
     const [otp, setOTP] = useState('')
