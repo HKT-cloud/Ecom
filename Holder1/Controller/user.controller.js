@@ -6,18 +6,42 @@ const jwt = require("jsonwebtoken");
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({ 
+                message: "Please provide email and password",
+                error: "Missing required fields"
+            });
+        }
 
         const user = await UserModel.findOne({ email });
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            console.log(`User not found for email: ${email}`);
+            return res.status(404).json({ 
+                message: "User not found",
+                error: "User does not exist"
+            });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).json({ message: "Incorrect password" });
+            console.log(`Incorrect password for user: ${user._id}`);
+            return res.status(401).json({ 
+                message: "Invalid credentials",
+                error: "Incorrect password"
+            });
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || "secret", {
+        const jwtSecret = process.env.JWT_SECRET || "your-secret-key-here";
+        if (!jwtSecret) {
+            console.error("JWT_SECRET not configured in environment variables");
+            return res.status(500).json({ 
+                message: "Server configuration error",
+                error: "JWT secret not configured"
+            });
+        }
+
+        const token = jwt.sign({ userId: user._id }, jwtSecret, {
             expiresIn: "1h",
         });
 
@@ -31,8 +55,17 @@ const login = async (req, res) => {
             },
         });
     } catch (err) {
-        console.error("Login error:", err);
-        return res.status(500).json({ message: "Server error", error: err.message });
+        console.error("Login error:", {
+            error: err.message,
+            stack: err.stack,
+            request: req.body
+        });
+        
+        // Don't expose sensitive error details to client
+        return res.status(500).json({ 
+            message: "Internal server error",
+            error: "An unexpected error occurred"
+        });
     }
 };
 
