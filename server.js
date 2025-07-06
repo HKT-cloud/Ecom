@@ -39,6 +39,45 @@ app.use(cors({
   credentials: true,
 }));
 
+// Add health check endpoint
+app.get('/health', async (req, res) => {
+    try {
+        // Check database connection
+        const db = mongoose.connection;
+        if (db.readyState !== 1) {
+            return res.status(503).json({
+                status: 'error',
+                message: 'Database connection not ready',
+                details: {
+                    readyState: db.readyState,
+                    host: db.host,
+                    name: db.name
+                }
+            });
+        }
+
+        // Test database query
+        const count = await UserModel.estimatedDocumentCount();
+        
+        return res.status(200).json({
+            status: 'ok',
+            database: {
+                connected: true,
+                usersCount: count,
+                collection: UserModel.collection.collectionName
+            },
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Health check error:', error);
+        return res.status(500).json({
+            status: 'error',
+            message: 'Database check failed',
+            error: error.message
+        });
+    }
+});
+
 // ✅ Make sure Express handles preflight OPTIONS requests globally
 app.options('*', cors());
 

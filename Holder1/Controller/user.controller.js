@@ -8,30 +8,58 @@ const login = async (req, res) => {
         const { email, password } = req.body;
         
         if (!email || !password) {
+            console.error('Login attempt failed - missing credentials');
             return res.status(400).json({ 
                 message: "Please provide email and password",
                 error: "Missing required fields"
             });
         }
 
-        const user = await UserModel.findOne({ email });
+        // Log login attempt with detailed info
+        console.log('Login attempt:', {
+            email: email,
+            timestamp: new Date().toISOString(),
+            requestOrigin: req.headers.origin
+        });
+
+        // Convert email to lowercase for case-insensitive search
+        const searchEmail = email.toLowerCase();
+        console.log('Searching for user with email:', searchEmail);
+
+        // Add debug logging for UserModel
+        console.log('UserModel schema:', UserModel.schema);
+        
+        const user = await UserModel.findOne({ email: searchEmail }).select('+password');
+        console.log('User found:', user ? 'Yes' : 'No');
+        
         if (!user) {
-            console.log(`User not found for email: ${email}`);
-            return res.status(404).json({ 
-                message: "User not found",
-                error: "User does not exist"
+            console.log(`User not found for email: ${searchEmail}`);
+            console.log('Database collection:', UserModel.collection.collectionName);
+            // Don't reveal if user exists for security
+            return res.status(401).json({ 
+                message: "Invalid credentials",
+                error: "Invalid email or password"
             });
         }
 
+        console.log('User found:', {
+            id: user._id,
+            email: user.email,
+            name: user.name
+        });
+
         const isMatch = await bcrypt.compare(password, user.password);
+        console.log('Password match:', isMatch);
+        
         if (!isMatch) {
             console.log(`Incorrect password for user: ${user._id}`);
             return res.status(401).json({ 
                 message: "Invalid credentials",
-                error: "Incorrect password"
+                error: "Invalid email or password"
             });
         }
 
+        // Generate JWT token
         const jwtSecret = process.env.JWT_SECRET || "your-secret-key-here";
         if (!jwtSecret) {
             console.error("JWT_SECRET not configured in environment variables");
@@ -44,6 +72,10 @@ const login = async (req, res) => {
         const token = jwt.sign({ userId: user._id }, jwtSecret, {
             expiresIn: "1h",
         });
+
+        // Log successful login
+        console.log(`User ${user._id} logged in successfully`);
+        console.log('Generated token:', token);
 
         return res.status(200).json({
             message: "Login successful",
@@ -58,7 +90,8 @@ const login = async (req, res) => {
         console.error("Login error:", {
             error: err.message,
             stack: err.stack,
-            request: req.body
+            request: req.body,
+            timestamp: new Date().toISOString()
         });
         
         // Don't expose sensitive error details to client
