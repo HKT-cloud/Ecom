@@ -33,6 +33,14 @@ app.use(cors({
   credentials: true,
 }));
 
+// Body parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Mount routes
+app.use('/user', userRoutes);
+app.use('/otp', otpRoutes);
+
 // Add health check endpoint
 app.get('/health', async (req, res) => {
     try {
@@ -76,30 +84,8 @@ app.get('/health', async (req, res) => {
     }
 });
 
-// Add 404 handler
-app.use((req, res) => {
-    console.error('404 Not Found:', {
-        method: req.method,
-        url: req.originalUrl,
-        timestamp: new Date().toISOString()
-    });
-    
-    return res.status(404).json({
-        status: 'error',
-        message: 'API route not found',
-        details: {
-            method: req.method,
-            path: req.originalUrl
-        }
-    });
-});
-
 // ✅ Make sure Express handles preflight OPTIONS requests globally
 app.options('*', cors());
-
-// ✅ Body parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // ✅ Basic request logging
 app.use((req, res, next) => {
@@ -125,12 +111,7 @@ app.use((err, req, res, next) => {
         error: env === 'development' ? err.message : 'An unexpected error occurred'
     });
 });
-app.use(express.urlencoded({ extended: true }));
-
-// ✅ Your routes
-app.use('/user', userRoutes);
-app.use('/user/otp', otpRoutes);
-
+// Remove duplicate route mounts
 // ✅ Connect to DB and start server
 connectDB().then(() => {
   app.listen(PORT, () => {
