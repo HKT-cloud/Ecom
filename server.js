@@ -8,10 +8,22 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ✅ Allow CORS from frontend
+const allowedOrigins = [
+  'https://ecomexpress-0dc3.onrender.com',
+  'https://ecomexpress-dn3d.onrender.com',
+  'http://localhost:5173' // For local development
+];
+
 app.use(cors({
-  origin: 'https://ecomexpress-0dc3.onrender.com',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
 }));
 
