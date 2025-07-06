@@ -7,14 +7,10 @@ const api = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
-  timeout: 5000,
-  // Ensure we always use the full URL
-  transformRequest: [(data, headers) => {
-    return data;
-  }]
+  timeout: 5000
 });
 
-// ✅ Clean single request interceptor
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
     // Add Authorization token if available
@@ -26,13 +22,11 @@ api.interceptors.request.use(
     // Log the request for debugging
     console.log('[API Request]', {
       method: config.method.toUpperCase(),
-      fullUrl: config.baseURL + config.url,
+      url: config.baseURL + config.url,
       headers: config.headers,
       data: config.data
     });
 
-    // Ensure we always use the full URL
-    config.url = config.baseURL + config.url;
     return config;
   },
   (error) => {
