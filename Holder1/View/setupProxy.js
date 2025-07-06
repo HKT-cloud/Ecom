@@ -2,9 +2,8 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const process = require('process');
 
 const getBackendUrl = () => {
-    return process.env.NODE_ENV === 'production' 
-        ? 'https://ecomexpress-dn3d.onrender.com' 
-        : 'http://localhost:3000';
+    // Always use the production URL since we're deploying on Render
+    return 'https://ecomexpress-dn3d.onrender.com';
 };
 
 module.exports = function(app) {
@@ -40,7 +39,4 @@ module.exports = function(app) {
     // Proxy OTP routes
     app.use('/otp', createProxyMiddleware(proxyOptions));
 };
-            }
-        })
-    );
-};
+            
