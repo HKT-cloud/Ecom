@@ -69,13 +69,35 @@ app.get('/health', async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (error) {
-        console.error('Health check error:', error);
+        console.error('Health check error:', {
+            error: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString()
+        });
         return res.status(500).json({
             status: 'error',
             message: 'Database check failed',
             error: error.message
         });
     }
+});
+
+// Add 404 handler
+app.use((req, res) => {
+    console.error('404 Not Found:', {
+        method: req.method,
+        url: req.originalUrl,
+        timestamp: new Date().toISOString()
+    });
+    
+    return res.status(404).json({
+        status: 'error',
+        message: 'API route not found',
+        details: {
+            method: req.method,
+            path: req.originalUrl
+        }
+    });
 });
 
 // ✅ Make sure Express handles preflight OPTIONS requests globally
