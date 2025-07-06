@@ -59,7 +59,7 @@ const Signup = ({ onOTPVerification }) => {
     setLoading(true);
     try {
       // First, attempt to register
-      const response = await api.post('/user/signup', { 
+      const response = await api.post('/signup', { 
         email, 
         password,
         fullName
