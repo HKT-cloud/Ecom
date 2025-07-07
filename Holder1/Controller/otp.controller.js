@@ -15,13 +15,13 @@ const transporter = nodemailer.createTransport({
 });
 
 // Verify SMTP connection
-try {
-    await transporter.verify();
-    console.log('SMTP connection verified');
-} catch (error) {
-    console.error('SMTP connection error:', error);
-    throw new Error('Failed to verify SMTP connection');
-}
+transporter.verify((error, success) => {
+    if (error) {
+        console.error('SMTP connection error:', error);
+        throw new Error('Failed to verify SMTP connection');
+    }
+    console.log('SMTP connection verified:', success);
+});
 
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -73,17 +73,28 @@ const sendOTP = async (req, res) => {
         };
 
         try {
-            await transporter.sendMail(mailOptions);
-            
-            // Clean up old OTP records for this email and purpose
+            // First clean up any existing OTP records for this email and purpose
             await OTPModel.deleteMany({
                 email,
                 purpose,
-                expiresAt: { $lt: new Date() }
+                $or: [
+                    { expiresAt: { $lt: new Date() } },
+                    { createdAt: { $lt: new Date(Date.now() - 5 * 60 * 1000) } }
+                ]
             });
-            
+
+            // Send email with enhanced error handling
+            await transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error('Failed to send email:', error);
+                    throw new Error('Failed to send email');
+                }
+                console.log('Email sent:', info.response);
+            });
+
             res.json({
-                message: 'OTP sent successfully'
+                message: 'OTP sent successfully',
+                email: email // Return email for frontend reference
             });
         } catch (mailError) {
             console.error('Failed to send email:', mailError);
@@ -95,7 +106,10 @@ const sendOTP = async (req, res) => {
             await OTPModel.deleteMany({
                 email,
                 purpose,
-                createdAt: { $lt: new Date(Date.now() - 5 * 60 * 1000) } // Remove records older than 5 minutes
+                $or: [
+                    { expiresAt: { $lt: new Date() } },
+                    { createdAt: { $lt: new Date(Date.now() - 5 * 60 * 1000) } }
+                ]
             });
             
             throw new Error('Failed to send email');
