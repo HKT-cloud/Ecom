@@ -3,8 +3,12 @@ require('dotenv').config();
 
 const connectDB = async () => {
     try {
-        // MongoDB connection string
-        const MONGODB_URI = 'mongodb+srv://harshal:harshal2408@cluster0.zkglcor.mongodb.net/ecomexpress';
+        // MongoDB connection string from environment
+        const MONGODB_URI = process.env.MONGODB_URI;
+        
+        if (!MONGODB_URI) {
+            throw new Error('MONGODB_URI is not set in environment variables');
+        }
         
         console.log('Connecting to MongoDB...');
         console.log('MongoDB URI:', MONGODB_URI);
