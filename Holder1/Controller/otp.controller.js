@@ -14,6 +14,15 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Test SMTP connection
+transporter.verify((error, success) => {
+    if (error) {
+        console.error('SMTP connection error:', error);
+    } else {
+        console.log('SMTP connection verified:', success);
+    }
+});
+
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
@@ -57,18 +66,22 @@ const sendOTP = async (req, res) => {
 
         // Send email
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: process.env.FROM_EMAIL || 'noreply@ecomexpress.com',
             to: email,
             subject: 'Your OTP Code',
             text: `Your OTP code is: ${otp}. This code will expire in 5 minutes.`
         };
 
-        await transporter.sendMail(mailOptions);
-
-        res.json({
-            message: 'OTP sent successfully',
-            otp // For testing, remove in production
-        });
+        try {
+            await transporter.sendMail(mailOptions);
+            res.json({
+                message: 'OTP sent successfully'
+            });
+        } catch (mailError) {
+            console.error('Failed to send email:', mailError);
+            await OTPModel.deleteOne({ _id: otpRecord._id }); // Clean up failed OTP
+            throw new Error('Failed to send email');
+        }
     } catch (error) {
         console.error('Send OTP error:', error);
         res.status(500).json({
