@@ -14,14 +14,14 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Test SMTP connection
-transporter.verify((error, success) => {
-    if (error) {
-        console.error('SMTP connection error:', error);
-    } else {
-        console.log('SMTP connection verified:', success);
-    }
-});
+// Verify SMTP connection
+try {
+    await transporter.verify();
+    console.log('SMTP connection verified');
+} catch (error) {
+    console.error('SMTP connection error:', error);
+    throw new Error('Failed to verify SMTP connection');
+}
 
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -74,12 +74,30 @@ const sendOTP = async (req, res) => {
 
         try {
             await transporter.sendMail(mailOptions);
+            
+            // Clean up old OTP records for this email and purpose
+            await OTPModel.deleteMany({
+                email,
+                purpose,
+                expiresAt: { $lt: new Date() }
+            });
+            
             res.json({
                 message: 'OTP sent successfully'
             });
         } catch (mailError) {
             console.error('Failed to send email:', mailError);
-            await OTPModel.deleteOne({ _id: otpRecord._id }); // Clean up failed OTP
+            
+            // Clean up failed OTP record
+            await OTPModel.deleteOne({ _id: otpRecord._id });
+            
+            // Also clean up any other failed attempts for this email
+            await OTPModel.deleteMany({
+                email,
+                purpose,
+                createdAt: { $lt: new Date(Date.now() - 5 * 60 * 1000) } // Remove records older than 5 minutes
+            });
+            
             throw new Error('Failed to send email');
         }
     } catch (error) {
