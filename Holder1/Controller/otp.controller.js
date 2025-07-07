@@ -32,8 +32,28 @@ const sendOTP = async (req, res) => {
         const { email, purpose } = req.body;
         
         if (!email || !purpose) {
+            console.error('Invalid OTP request:', { email, purpose });
             return res.status(400).json({
+                message: 'Invalid request',
                 error: 'Email and purpose are required'
+            });
+        }
+
+        // Validate email format
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            console.error('Invalid email format:', email);
+            return res.status(400).json({
+                message: 'Invalid email',
+                error: 'Please provide a valid email address'
+            });
+        }
+
+        // Validate purpose
+        if (!['login', 'signup', 'reset'].includes(purpose)) {
+            console.error('Invalid OTP purpose:', purpose);
+            return res.status(400).json({
+                message: 'Invalid purpose',
+                error: 'Invalid OTP purpose'
             });
         }
 
@@ -64,7 +84,7 @@ const sendOTP = async (req, res) => {
         });
         await otpRecord.save();
 
-        // Send email
+        // Send email with enhanced error handling
         const mailOptions = {
             from: process.env.FROM_EMAIL || 'noreply@ecomexpress.com',
             to: email,
@@ -84,25 +104,30 @@ const sendOTP = async (req, res) => {
             });
 
             // Send email with enhanced error handling
-            await transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                    console.error('Failed to send email:', error);
-                    throw new Error('Failed to send email');
-                }
-                console.log('Email sent:', info.response);
+            await new Promise((resolve, reject) => {
+                transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        console.error('Failed to send email:', error);
+                        reject(error);
+                    } else {
+                        console.log('Email sent:', info.response);
+                        resolve(info);
+                    }
+                });
             });
 
             res.json({
                 message: 'OTP sent successfully',
-                email: email // Return email for frontend reference
+                email: email, // Return email for frontend reference
+                expiresAt: expiresAt // Return expiration time for frontend
             });
-        } catch (mailError) {
-            console.error('Failed to send email:', mailError);
+        } catch (error) {
+            console.error('Email sending failed:', error);
             
             // Clean up failed OTP record
             await OTPModel.deleteOne({ _id: otpRecord._id });
             
-            // Also clean up any other failed attempts for this email
+            // Clean up any other failed attempts for this email
             await OTPModel.deleteMany({
                 email,
                 purpose,
@@ -112,7 +137,10 @@ const sendOTP = async (req, res) => {
                 ]
             });
             
-            throw new Error('Failed to send email');
+            return res.status(500).json({
+                message: 'Failed to send OTP',
+                error: 'Failed to send email'
+            });
         }
     } catch (error) {
         console.error('Send OTP error:', error);

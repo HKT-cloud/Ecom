@@ -6,7 +6,7 @@ import './styles/signup-page.css';
 
 const Signup = ({ onOTPVerification }) => {
   const navigate = useNavigate();
-  const [fullName, setFullName] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -26,7 +26,7 @@ const Signup = ({ onOTPVerification }) => {
       return;
     }
 
-    if (!fullName.trim()) {
+    if (!name.trim()) {
       setError('Please enter your full name');
       setLoading(false);
       return;
@@ -60,9 +60,9 @@ const Signup = ({ onOTPVerification }) => {
     try {
       // First, attempt to register
       const response = await signup({ 
+        name,
         email, 
-        password,
-        fullName
+        password
       });
       
       if (response.data.token) {
@@ -70,7 +70,7 @@ const Signup = ({ onOTPVerification }) => {
         localStorage.setItem('temp_token', response.data.token);
         localStorage.setItem('temp_user', JSON.stringify({
           ...response.data.user,
-          fullName: fullName
+          name: name
         }));
         
         // Send OTP for verification
@@ -105,13 +105,13 @@ const Signup = ({ onOTPVerification }) => {
 
             <form onSubmit={handleSubmit} className="mt-4">
               <div className="form-group">
-                <label htmlFor="fullName" className="form-label">Full Name</label>
+                <label htmlFor="name" className="form-label">Full Name</label>
                 <input
                   type="text"
                   className="form-control"
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your full name"
                   required
                 />
@@ -140,18 +140,6 @@ const Signup = ({ onOTPVerification }) => {
                   required
                 />
               </div>
-              <div className="form-group mt-3">
-                <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  id="confirmPassword"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm your password"
-                  required
-                />
-              </div>
               <div className="form-group">
                 <div className="form-check">
                   <input
@@ -176,7 +164,7 @@ const Signup = ({ onOTPVerification }) => {
               </button>
             </form>
             <p className="login-footer mt-3">
-              Already have an account? <Link to="/login" className="text-primary">Sign In Here</Link>
+              Already have an account? <Link to="/login" className="text-primary">Sign In</Link>
             </p>
           </Col>
         </Row>
