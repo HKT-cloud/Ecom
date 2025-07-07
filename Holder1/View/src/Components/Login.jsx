@@ -16,8 +16,14 @@ const Login = ({ onOTPVerification }) => {
     setError('');
     setLoading(true);
     try {
-      // First, attempt to login
-      const response = await login({ email, password });
+      // First, attempt to login with properly formatted email
+      const formattedEmail = email.trim().toLowerCase();
+      console.log('Attempting login with email:', formattedEmail);
+      
+      const response = await login({ 
+        email: formattedEmail, 
+        password 
+      });
       
       if (response.data.token) {
         // Store token temporarily before OTP verification

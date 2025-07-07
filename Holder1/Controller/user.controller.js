@@ -13,24 +13,45 @@ const login = async (req, res) => {
             });
         }
 
+        // Log received credentials
+        console.log('Received login request:', {
+            email: email.trim().toLowerCase(),
+            passwordLength: password.length // Log length instead of actual password for security
+        });
+
         // Convert email to lowercase to match database
-        const userEmail = email.toLowerCase();
+        const userEmail = email.trim().toLowerCase();
+        console.log('Searching for user with email:', userEmail);
+        
         const user = await UserModel.findOne({ email: userEmail }).select('+password');
         
         if (!user) {
+            console.log('No user found with email:', userEmail);
             return res.status(401).json({ 
                 message: "Invalid credentials",
                 error: "Invalid email or password"
             });
         }
 
-        // Log the password comparison for debugging
-        console.log('Comparing password:', password);
-        console.log('Stored hash:', user.password);
+        // Log user details (excluding sensitive info)
+        console.log('Found user:', {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            createdAt: user.createdAt
+        });
+
+        // Log password comparison details
+        console.log('Password comparison details:', {
+            enteredPasswordLength: password.length,
+            storedPasswordHash: user.password,
+            isMatch: await bcrypt.compare(password, user.password)
+        });
         
         const isMatch = await bcrypt.compare(password, user.password);
         
         if (!isMatch) {
+            console.log('Password mismatch detected');
             return res.status(401).json({ 
                 message: "Invalid credentials",
                 error: "Invalid email or password"
