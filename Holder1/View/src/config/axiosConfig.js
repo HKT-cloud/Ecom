@@ -14,7 +14,7 @@ const api = axios.create({
 export const login = (data) => api.post('/user/login', data);
 export const signup = (data) => api.post('/user/signup', data);
 export const sendOTP = (data) => api.post('/otp/send-otp', data);
-export const verifyOTP = (data) => api.post('/user/otp/verify', data);
+export const verifyOTP = (data) => api.post('/otp/verify', data);
 
 // Request interceptor
 api.interceptors.request.use(
