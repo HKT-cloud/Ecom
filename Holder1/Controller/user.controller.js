@@ -13,7 +13,9 @@ const login = async (req, res) => {
             });
         }
 
-        const user = await UserModel.findOne({ email }).select('+password');
+        // Convert email to lowercase to match database
+        const userEmail = email.toLowerCase();
+        const user = await UserModel.findOne({ email: userEmail }).select('+password');
         
         if (!user) {
             return res.status(401).json({ 
@@ -22,6 +24,10 @@ const login = async (req, res) => {
             });
         }
 
+        // Log the password comparison for debugging
+        console.log('Comparing password:', password);
+        console.log('Stored hash:', user.password);
+        
         const isMatch = await bcrypt.compare(password, user.password);
         
         if (!isMatch) {
@@ -65,7 +71,9 @@ const signup = async (req, res) => {
             });
         }
 
-        const existingUser = await UserModel.findOne({ email });
+        // Convert email to lowercase before checking and saving
+        const userEmail = email.toLowerCase();
+        const existingUser = await UserModel.findOne({ email: userEmail });
         if (existingUser) {
             return res.status(400).json({
                 message: "Email already registered",
@@ -73,11 +81,10 @@ const signup = async (req, res) => {
             });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
         const user = new UserModel({
             name,
-            email,
-            password: hashedPassword
+            email: userEmail,
+            password
         });
 
         await user.save();
