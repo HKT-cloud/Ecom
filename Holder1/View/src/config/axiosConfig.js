@@ -13,7 +13,7 @@ const api = axios.create({
 // Export named API methods
 export const login = (data) => api.post('/user/login', data);
 export const signup = (data) => api.post('/user/signup', data);
-export const sendOTP = (data) => api.post('/user/otp/send-otp', data);
+export const sendOTP = (data) => api.post('/otp/send-otp', data);
 export const verifyOTP = (data) => api.post('/user/otp/verify', data);
 
 // Request interceptor
