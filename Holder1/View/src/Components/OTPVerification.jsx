@@ -16,15 +16,16 @@ const OTPVerification = ({ email, purpose, onVerified }) => {
             // Debug log before sending OTP
             console.log('Sending OTP for verification:', {
                 email: email.trim(),
-                otp: otp.trim(),
+                otp: otp, // Don't trim here - we want to see the exact value
                 purpose,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                otpType: typeof otp
             });
 
             // Verify OTP
             const response = await api.post('/otp/verify-otp', {
                 email: email.trim(),
-                otp: otp.trim(),
+                otp: otp, // Send as-is without trimming
                 purpose
             })
 

@@ -174,27 +174,38 @@ const verifyOTP = async (req, res) => {
         // Log verification parameters
         console.log('🔍 Attempting to verify OTP with:', {
             email: lowerCaseEmail,
-            otp: otp.trim(),
+            otp: otp, // Log the exact OTP value received
+            otpType: typeof otp,
+            otpLength: otp.length,
             purpose,
-            currentTime: new Date().toISOString(),
-            otpType: typeof otp.trim()
+            currentTime: new Date().toISOString()
+        });
+
+        // Convert OTP to string if it's not already
+        const otpString = String(otp);
+        console.log('🔄 Converting OTP to string:', {
+            original: otp,
+            converted: otpString,
+            originalType: typeof otp,
+            convertedType: typeof otpString
         });
 
         // Log all OTPs in database before verification
         const allOtps = await OTPModel.find({ email: lowerCaseEmail }).sort({ createdAt: -1 });
-        console.log('📄 All OTPs in DB for verification:', allOtps.map(otp => ({
-            _id: otp._id,
-            otp: otp.otp,
-            purpose: otp.purpose,
-            expiresAt: otp.expiresAt.toISOString(),
-            createdAt: otp.createdAt.toISOString(),
-            otpType: typeof otp.otp
+        console.log('📄 All OTPs in DB for verification:', allOtps.map(dbOtp => ({
+            _id: dbOtp._id,
+            otp: dbOtp.otp,
+            purpose: dbOtp.purpose,
+            expiresAt: dbOtp.expiresAt.toISOString(),
+            createdAt: dbOtp.createdAt.toISOString(),
+            otpType: typeof dbOtp.otp,
+            otpLength: dbOtp.otp.length
         })));
 
         // Log search parameters for MongoDB
         console.log('🔍 MongoDB search parameters:', {
             email: lowerCaseEmail,
-            otp: otp.trim(),
+            otp: otpString, // Use the converted string
             purpose,
             expiresAt: { $gt: new Date() },
             currentTime: new Date().toISOString()
@@ -202,7 +213,7 @@ const verifyOTP = async (req, res) => {
 
         const otpRecord = await OTPModel.findOne({
             email: lowerCaseEmail,
-            otp: otp.trim(),
+            otp: otpString, // Use the converted string
             purpose,
             expiresAt: { $gt: new Date() }
         });
