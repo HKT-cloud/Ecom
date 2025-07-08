@@ -5,9 +5,18 @@ import api from '../config/axiosConfig'
 import './styles/login-page.css'
 
 const OTPVerification = ({ email, purpose, onVerified }) => {
-    const [otp, setOTP] = useState('')
+    const [otp, setOTP] = useState('');
     const [error, setError] = useState('')
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate()
+
+    // Ensure OTP is always a string and handle input
+    const handleOTPChange = (e) => {
+        const value = e.target.value;
+        // Remove any non-digit characters and ensure string format
+        const cleanedValue = value.replace(/\D/g, '');
+        setOTP(cleanedValue);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -16,18 +25,58 @@ const OTPVerification = ({ email, purpose, onVerified }) => {
             // Debug log before sending OTP
             console.log('Sending OTP for verification:', {
                 email: email.trim(),
-                otp: otp, // Don't trim here - we want to see the exact value
+                otp: otp, // Log the exact OTP value
                 purpose,
                 timestamp: new Date().toISOString(),
-                otpType: typeof otp
+                otpType: typeof otp,
+                otpLength: otp.length
             });
 
-            // Verify OTP
-            const response = await api.post('/otp/verify-otp', {
-                email: email.trim(),
-                otp: otp, // Send as-is without trimming
-                purpose
-            })
+            setIsSubmitting(true);
+            try {
+                // Verify OTP
+                const response = await api.post('/otp/verify-otp', {
+                    email: email.trim(),
+                    otp: otp, // Send as-is since it's already a string
+                    purpose
+                });
+
+                // Check if OTP verification was successful
+                if (!response.data.success) {
+                    console.error('OTP verification failed:', response.data);
+                    setError(response.data.error || 'Invalid OTP');
+                    return;
+                }
+
+                // Get temporary token and user data
+                const tempToken = localStorage.getItem('temp_token');
+                const tempUser = localStorage.getItem('temp_user');
+                
+                if (!tempToken || !tempUser) {
+                    console.error('No temporary data found after OTP verification');
+                    setError('Failed to retrieve user data');
+                    return;
+                }
+
+                // Parse and store user data
+                const userData = JSON.parse(tempUser);
+                
+                // Move from temp to permanent storage
+                localStorage.setItem('token', tempToken);
+                localStorage.setItem('user', JSON.stringify(userData));
+                localStorage.removeItem('temp_token');
+                localStorage.removeItem('temp_user');
+
+                // Call onVerified callback
+                if (onVerified) {
+                    onVerified(userData);
+                }
+            } catch (error) {
+                console.error('OTP verification error:', error);
+                setError(error.response?.data?.error || 'Failed to verify OTP');
+            } finally {
+                setIsSubmitting(false);
+            }
 
             // Check if OTP verification was successful
             if (!response.data.success) {
