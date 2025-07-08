@@ -71,7 +71,7 @@ const Signup = ({ onOTPVerification }) => {
         password
       });
       
-      if (response.data.token) {
+      if (response.data.success && response.data.requiresOTP) {
         // Store token temporarily before OTP verification
         localStorage.setItem('temp_token', response.data.token);
         localStorage.setItem('temp_user', JSON.stringify({
@@ -79,13 +79,12 @@ const Signup = ({ onOTPVerification }) => {
           name: name
         }));
         
-        // Send OTP for verification
-        await sendOTP({ email, purpose: 'signup' });
-        
         // Trigger OTP verification
         onOTPVerification(email, 'signup');
+      } else if (response.data.error) {
+        throw new Error(response.data.error);
       } else {
-        throw new Error(response.data.error || 'Registration failed');
+        throw new Error('Registration failed');
       }
     } catch (error) {
       console.error('Registration error:', error);
