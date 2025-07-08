@@ -14,7 +14,7 @@ const OTPVerification = ({ email, purpose, onVerified }) => {
     const handleOTPChange = (e) => {
         const value = e.target.value;
         // Remove any non-digit characters and ensure string format
-        const cleanedValue = value.replace(/\D/g, '');
+        const cleanedValue = value.replace(/\D/g, '').trim(); // Explicitly trim spaces
         setOTP(cleanedValue);
     };
 
@@ -36,15 +36,17 @@ const OTPVerification = ({ email, purpose, onVerified }) => {
             try {
                 // Verify OTP
                 const response = await api.post('/otp/verify-otp', {
-                    email: email.trim(),
-                    otp: otp, // Send as-is since it's already a string
+                    email: email.trim().toLowerCase(), // Ensure lowercase email
+                    otp: otp.trim(), // Ensure no spaces
                     purpose
                 });
 
+                console.log('OTP verification response:', response.data);
+
                 // Check if OTP verification was successful
-                if (!response.data.success) {
+                if (response.data.error) {
                     console.error('OTP verification failed:', response.data);
-                    setError(response.data.error || 'Invalid OTP');
+                    setError(response.data.error);
                     return;
                 }
 
@@ -66,6 +68,13 @@ const OTPVerification = ({ email, purpose, onVerified }) => {
                 localStorage.setItem('user', JSON.stringify(userData));
                 localStorage.removeItem('temp_token');
                 localStorage.removeItem('temp_user');
+
+                // Clear form and error
+                setOTP('');
+                setError('');
+
+                // Redirect to home page
+                navigate('/', { replace: true });
 
                 // Call onVerified callback
                 if (onVerified) {

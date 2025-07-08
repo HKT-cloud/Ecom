@@ -218,12 +218,14 @@ const verifyOTP = async (req, res) => {
         });
 
         // Convert OTP to string if it's not already
-        const otpString = String(otp);
+        const otpString = String(otp).trim(); // Explicitly trim spaces
         console.log('🔄 Converting OTP to string:', {
             original: otp,
             converted: otpString,
             originalType: typeof otp,
             convertedType: typeof otpString,
+            originalLength: otp.length,
+            convertedLength: otpString.length,
             timestamp: new Date().toISOString()
         });
 
@@ -236,7 +238,8 @@ const verifyOTP = async (req, res) => {
             expiresAt: dbOtp.expiresAt.toISOString(),
             createdAt: dbOtp.createdAt.toISOString(),
             otpType: typeof dbOtp.otp,
-            otpLength: dbOtp.otp.length
+            otpLength: dbOtp.otp.length,
+            expiresAtTimestamp: dbOtp.expiresAt.getTime()
         })));
 
         // Log search parameters for MongoDB
@@ -246,10 +249,27 @@ const verifyOTP = async (req, res) => {
             purpose,
             expiresAt: { $gt: new Date() },
             currentTime: new Date().toISOString(),
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            currentTimeTimestamp: new Date().getTime()
         });
 
-        const otpRecord = await OTPModel.findOne({
+        // Add a check for exact OTP match
+        const matchingOtps = allOtps.filter(dbOtp => 
+            dbOtp.otp === otpString && 
+            dbOtp.purpose === purpose && 
+            dbOtp.expiresAt > new Date()
+        );
+        
+        console.log('🔍 Matching OTPs found:', matchingOtps.map(match => ({
+            _id: match._id,
+            otp: match.otp,
+            purpose: match.purpose,
+            expiresAt: match.expiresAt.toISOString(),
+            createdAt: match.createdAt.toISOString(),
+            expiresAtTimestamp: match.expiresAt.getTime()
+        })));
+
+        const otpRecord = matchingOtps[0] || await OTPModel.findOne({
             email: lowerCaseEmail,
             otp: otpString, // Use the converted string
             purpose,
@@ -276,7 +296,8 @@ const verifyOTP = async (req, res) => {
                 expiresAt: dbOtp.expiresAt.toISOString(),
                 createdAt: dbOtp.createdAt.toISOString(),
                 otpType: typeof dbOtp.otp,
-                otpLength: dbOtp.otp.length
+                otpLength: dbOtp.otp.length,
+                expiresAtTimestamp: dbOtp.expiresAt.getTime()
             })));
             
             // Log current time and search parameters
@@ -286,11 +307,14 @@ const verifyOTP = async (req, res) => {
                     email: lowerCaseEmail,
                     otp: otpString, // Use the converted string
                     purpose,
-                    expiresAt: { $gt: new Date() }
+                    expiresAt: { $gt: new Date() },
+                    currentTime: new Date().toISOString(),
+                    currentTimeTimestamp: new Date().getTime()
                 }
             });
             
             return res.status(400).json({
+                success: false,
                 error: 'Invalid or expired OTP',
                 debug: {
                     timestamp: new Date().toISOString(),
@@ -298,7 +322,9 @@ const verifyOTP = async (req, res) => {
                         email: lowerCaseEmail,
                         otp: otpString, // Use the converted string
                         purpose,
-                        expiresAt: { $gt: new Date() }
+                        expiresAt: { $gt: new Date() },
+                        currentTime: new Date().toISOString(),
+                        currentTimeTimestamp: new Date().getTime()
                     }
                 }
             });
@@ -309,25 +335,19 @@ const verifyOTP = async (req, res) => {
 
         // Generate JWT token for login
         if (purpose === 'login') {
-            const user = await UserModel.findOne({ email: lowerCaseEmail });
-            const token = jwt.sign(
-                { userId: user._id },
-                process.env.JWT_SECRET,
-                { expiresIn: '24h' }
-            );
-            
-            res.json({
+            // Generate JWT token
+            const token = jwt.sign({ userId: otpRecord.email }, process.env.JWT_SECRET || 'your-secret-key', {
+                expiresIn: '24h'
+            });
+
+            return res.status(200).json({
+                success: true,
                 message: 'OTP verified successfully',
                 token,
                 user: {
-                    id: user._id,
-                    email: user.email,
-                    name: user.name
+                    id: otpRecord.email,
+                    email: otpRecord.email
                 }
-            });
-        } else {
-            res.json({
-                message: 'OTP verified successfully'
             });
         }
     } catch (error) {
