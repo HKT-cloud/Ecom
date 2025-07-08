@@ -110,9 +110,12 @@ const signup = async (req, res) => {
 
         await user.save();
 
-        // Store token temporarily before OTP verification
-        localStorage.setItem('temp_token', token);
-        localStorage.setItem('temp_user', JSON.stringify(user));
+        // Generate token for OTP verification
+        const token = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET || 'your-secret-key',
+            { expiresIn: '24h' }
+        );
 
         // Send OTP for verification
         await sendOTP({
@@ -125,6 +128,7 @@ const signup = async (req, res) => {
             success: true,
             message: 'Account created successfully. Please verify your email with OTP',
             requiresOTP: true,
+            token,
             user: {
                 id: user._id,
                 email: user.email,

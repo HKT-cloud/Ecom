@@ -70,7 +70,7 @@ const Signup = ({ onOTPVerification }) => {
         email, 
         password
       });
-      
+
       if (response.data.success && response.data.requiresOTP) {
         // Store token temporarily before OTP verification
         localStorage.setItem('temp_token', response.data.token);
@@ -81,6 +81,10 @@ const Signup = ({ onOTPVerification }) => {
         
         // Trigger OTP verification
         onOTPVerification(email, 'signup');
+      } else if (response.data.success && response.data.token) {
+        // If token is provided, navigate to dashboard
+        localStorage.setItem('token', response.data.token);
+        navigate('/dashboard');
       } else if (response.data.error) {
         throw new Error(response.data.error);
       } else {
