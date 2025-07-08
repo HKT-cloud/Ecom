@@ -5,12 +5,12 @@ const OTPModel = require('../Module/otp.model');
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    host: process.env.SMTP_HOST || 'smtp.sendgrid.net',
     port: process.env.SMTP_PORT || 587,
-    secure: process.env.SMTP_SECURE === 'true',
+    secure: true,
     auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD
+        user: process.env.SENDGRID_USERNAME || 'apikey',
+        pass: process.env.SENDGRID_API_KEY
     }
 });
 
@@ -31,6 +31,7 @@ const sendOTP = async (req, res) => {
     try {
         const { email, purpose } = req.body;
         
+        // Validate required fields
         if (!email || !purpose) {
             console.error('Invalid OTP request:', { email, purpose });
             return res.status(400).json({
@@ -46,6 +47,27 @@ const sendOTP = async (req, res) => {
                 message: 'Invalid email',
                 error: 'Please provide a valid email address'
             });
+        }
+
+        // Validate OTP purpose
+        const validPurposes = ['login', 'signup', 'password_reset'];
+        if (!validPurposes.includes(purpose)) {
+            console.error('Invalid OTP purpose:', purpose);
+            return res.status(400).json({
+                message: 'Invalid OTP purpose',
+                error: 'Purpose must be one of: login, signup, password_reset'
+            });
+        }
+
+        // Check if user exists for login/password_reset purposes
+        if (purpose !== 'signup') {
+            const user = await UserModel.findOne({ email });
+            if (!user && purpose === 'login') {
+                return res.status(400).json({
+                    message: 'Invalid credentials',
+                    error: 'No account found with this email'
+                });
+            }
         }
 
         // Validate purpose
