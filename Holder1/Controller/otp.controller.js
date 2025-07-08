@@ -5,14 +5,15 @@ const OTPModel = require('../Module/otp.model');
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.sendgrid.net',
-    port: process.env.SMTP_PORT || 587,
-    secure: false,
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // for STARTTLS
     auth: {
-        user: process.env.SENDGRID_USERNAME || 'apikey',
-        pass: process.env.SENDGRID_API_KEY
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD
     }
 });
+
 
 // Verify SMTP connection
 transporter.verify((error, success) => {
