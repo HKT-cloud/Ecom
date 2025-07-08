@@ -44,6 +44,12 @@ const Signup = ({ onOTPVerification }) => {
       return;
     }
 
+    if (!confirmPassword.trim()) {
+      setError('Please confirm your password');
+      setLoading(false);
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
@@ -137,6 +143,18 @@ const Signup = ({ onOTPVerification }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
+                  required
+                />
+              </div>
+              <div className="form-group mt-3">
+                <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
                   required
                 />
               </div>
