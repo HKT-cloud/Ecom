@@ -52,7 +52,7 @@ const sendOTP = async (req, res) => {
 
         // Validate OTP purpose
         const validPurposes = ['login', 'signup', 'password_reset'];
-        if (!validPurposes.includes(purpose)) {
+        if (!validPurposes.includes(purpose.toLowerCase())) {
             console.error('Invalid OTP purpose:', purpose);
             return res.status(400).json({
                 message: 'Invalid OTP purpose',
@@ -62,7 +62,7 @@ const sendOTP = async (req, res) => {
 
         // Check if user exists for login/password_reset purposes
         if (purpose !== 'signup') {
-            const user = await UserModel.findOne({ email });
+            const user = await UserModel.findOne({ email: email.toLowerCase() });
             if (!user && purpose === 'login') {
                 return res.status(400).json({
                     message: 'Invalid credentials',
@@ -71,8 +71,6 @@ const sendOTP = async (req, res) => {
             }
         }
 
-        // Validate purpose
-        if (!['login', 'signup', 'reset'].includes(purpose)) {
             console.error('Invalid OTP purpose:', purpose);
             return res.status(400).json({
                 message: 'Invalid purpose',
@@ -183,8 +181,11 @@ const verifyOTP = async (req, res) => {
             });
         }
 
+        // Convert email to lowercase for consistent matching
+        const lowerCaseEmail = email.toLowerCase();
+        
         const otpRecord = await OTPModel.findOne({
-            email,
+            email: lowerCaseEmail,
             otp,
             purpose,
             expiresAt: { $gt: new Date() }
