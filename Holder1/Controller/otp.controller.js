@@ -90,20 +90,7 @@ const sendOTP = async (req, res) => {
         const otp = generateOTP();
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-        // Save OTP to database
-        const otpRecord = new OTPModel({
-            email,
-            otp,
-            expiresAt,
-            purpose
-        });
-        await otpRecord.save();
-        console.log('OTP saved to DB:', {
-            email: otpRecord.email,
-            otp: otpRecord.otp,
-            purpose: otpRecord.purpose,
-            expiresAt: otpRecord.expiresAt.toISOString()
-        });
+        // Send email with enhanced error handling
 
         // Send email with enhanced error handling
         const mailOptions = {
@@ -192,6 +179,24 @@ const verifyOTP = async (req, res) => {
             currentTimestamp: new Date().toISOString()
         });
 
+        // Log all OTPs in database before verification
+        const allOtps = await OTPModel.find({ email: lowerCaseEmail }).sort({ createdAt: -1 });
+        console.log('All OTPs in DB for verification:', allOtps.map(otp => ({
+            _id: otp._id,
+            otp: otp.otp,
+            purpose: otp.purpose,
+            expiresAt: otp.expiresAt.toISOString(),
+            createdAt: otp.createdAt.toISOString()
+        })));
+
+        // Log search parameters for MongoDB
+        console.log('MongoDB search parameters:', {
+            email: lowerCaseEmail,
+            otp: otp.trim(),
+            purpose,
+            expiresAt: { $gt: new Date() }
+        });
+
         const otpRecord = await OTPModel.findOne({
             email: lowerCaseEmail,
             otp: otp.trim(),
@@ -201,13 +206,26 @@ const verifyOTP = async (req, res) => {
 
         if (!otpRecord) {
             // Log all OTPs for this user to help debug
-            const allOtps = await OTPModel.find({ email: lowerCaseEmail, purpose });
+            const allOtps = await OTPModel.find({ email: lowerCaseEmail }).sort({ createdAt: -1 });
             console.log('Found OTPs for debugging:', allOtps.map(otp => ({
                 _id: otp._id,
                 otp: otp.otp,
+                purpose: otp.purpose,
                 expiresAt: otp.expiresAt.toISOString(),
                 createdAt: otp.createdAt.toISOString()
             })));
+            
+            // Log current time and search parameters
+            console.error('OTP verification failed:', {
+                currentTime: new Date().toISOString(),
+                searchParams: {
+                    email: lowerCaseEmail,
+                    otp: otp.trim(),
+                    purpose,
+                    expiresAt: { $gt: new Date() }
+                }
+            });
+            
             return res.status(400).json({
                 error: 'Invalid or expired OTP',
                 debug: {

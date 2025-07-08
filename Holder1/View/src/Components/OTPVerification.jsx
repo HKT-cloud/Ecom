@@ -13,6 +13,14 @@ const OTPVerification = ({ email, purpose, onVerified }) => {
         e.preventDefault()
         setError('')
         try {
+            // Debug log before sending OTP
+            console.log('Sending OTP for verification:', {
+                email: email.trim(),
+                otp: otp.trim(),
+                purpose,
+                timestamp: new Date().toISOString()
+            });
+
             // Verify OTP
             const response = await api.post('/otp/verify-otp', {
                 email: email.trim(),
@@ -22,6 +30,12 @@ const OTPVerification = ({ email, purpose, onVerified }) => {
 
             // Check if OTP verification was successful
             if (!response.data.success) {
+                // Log error response from backend
+                console.error('OTP verification failed:', {
+                    error: response.data.error,
+                    debug: response.data.debug
+                });
+                
                 const errorMessage = response.data.error || 'Invalid OTP';
                 // Add more specific error handling
                 if (errorMessage.includes('expired')) {
