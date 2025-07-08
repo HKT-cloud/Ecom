@@ -71,16 +71,9 @@ const sendOTP = async (req, res) => {
             }
         }
 
-            console.error('Invalid OTP purpose:', purpose);
-            return res.status(400).json({
-                message: 'Invalid purpose',
-                error: 'Invalid OTP purpose'
-            });
-        }
-
         // Check if user exists for login/signup
         if (purpose === 'login' || purpose === 'signup') {
-            const user = await UserModel.findOne({ email });
+            const user = await UserModel.findOne({ email: email.toLowerCase() });
             if (purpose === 'login' && !user) {
                 return res.status(404).json({
                     error: 'User not found'
@@ -93,6 +86,7 @@ const sendOTP = async (req, res) => {
             }
         }
 
+        // Generate OTP
         const otp = generateOTP();
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
@@ -202,7 +196,7 @@ const verifyOTP = async (req, res) => {
 
         // Generate JWT token for login
         if (purpose === 'login') {
-            const user = await UserModel.findOne({ email });
+            const user = await UserModel.findOne({ email: lowerCaseEmail });
             const token = jwt.sign(
                 { userId: user._id },
                 process.env.JWT_SECRET,
