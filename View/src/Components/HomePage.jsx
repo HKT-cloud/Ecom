@@ -30,8 +30,10 @@ const HomePage = () => {
               className="hero-logo"
             />
             <h1 className="hero-title">Welcome to EcomExpress</h1>
-            <h3>{userEmail}</h3>
-            <button className="logout-button" onClick={handleLogout}>Logout</button>
+            <div className="user-info">
+              <h3 className="user-email">{userEmail}</h3>
+              <button className="logout-button" onClick={handleLogout}>Logout</button>
+            </div>
             <div className="hero-description">
               Experience excellence in logistics with our comprehensive solutions for shipping, warehousing, and international delivery.
             </div>
