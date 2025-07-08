@@ -5,23 +5,50 @@ import api from '../config/axiosConfig'
 import './styles/login-page.css'
 
 const OTPVerification = ({ email, purpose, onVerified }) => {
-    const [otp, setOTP] = useState('')
+    const [otp, setOTP] = useState('');
     const [error, setError] = useState('')
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate()
 
+    // Ensure OTP is always a string and handle input
+    const handleOTPChange = (e) => {
+        const value = e.target.value;
+        // Remove any non-digit characters and ensure string format
+        const cleanedValue = value.replace(/\D/g, '').trim(); // Explicitly trim spaces
+        setOTP(cleanedValue);
+    };
+
     const handleSubmit = async (e) => {
-        e.preventDefault()
-        setError('')
+        e.preventDefault();
+        setError('');
         try {
+            // Debug log before sending OTP
+            console.log('Sending OTP for verification:', {
+                email: email.trim(),
+                otp: otp, // Log the exact OTP value
+                purpose,
+                timestamp: new Date().toISOString(),
+                otpType: typeof otp,
+                otpLength: otp.length
+            });
+
             // Verify OTP
             const response = await api.post('/otp/verify-otp', {
-                email: email.trim(),
-                otp: otp.trim(),
+                email: email.trim().toLowerCase(), // Ensure lowercase email
+                otp: otp.trim(), // Ensure no spaces
                 purpose
-            })
+            });
+
+            console.log('OTP verification response:', response.data);
 
             // Check if OTP verification was successful
             if (!response.data.success) {
+                // Log error response from backend
+                console.error('OTP verification failed:', {
+                    error: response.data.error,
+                    debug: response.data.debug
+                });
+                
                 const errorMessage = response.data.error || 'Invalid OTP';
                 // Add more specific error handling
                 if (errorMessage.includes('expired')) {

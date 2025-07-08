@@ -5,14 +5,15 @@ const OTPModel = require('../Module/otp.model');
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: process.env.SMTP_PORT || 587,
-    secure: process.env.SMTP_SECURE === 'true',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // for STARTTLS
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD
     }
 });
+
 
 // Verify SMTP connection
 transporter.verify((error, success) => {
@@ -23,14 +24,23 @@ transporter.verify((error, success) => {
     console.log('SMTP connection verified');
 });
 
-const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+exports.generateOTP = () => {
+    // Generate 6-digit OTP as string
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('Generated OTP:', {
+        otp,
+        type: typeof otp,
+        length: otp.length,
+        timestamp: new Date().toISOString()
+    });
+    return otp;
 };
 
-const sendOTP = async (req, res) => {
+exports.sendOTP = async (req, res) => {
     try {
         const { email, purpose } = req.body;
         
+        // Validate required fields
         if (!email || !purpose) {
             console.error('Invalid OTP request:', { email, purpose });
             return res.status(400).json({
@@ -48,18 +58,27 @@ const sendOTP = async (req, res) => {
             });
         }
 
-        // Validate purpose
-        if (!['login', 'signup', 'reset'].includes(purpose)) {
+        const validPurposes = ['login', 'signup', 'password_reset'];
+        if (!validPurposes.includes(purpose.toLowerCase())) {
             console.error('Invalid OTP purpose:', purpose);
             return res.status(400).json({
-                message: 'Invalid purpose',
-                error: 'Invalid OTP purpose'
+                message: 'Invalid OTP purpose',
+                error: 'Purpose must be one of: login, signup, password_reset'
             });
         }
 
-        // Check if user exists for login/signup
+        if (purpose !== 'signup') {
+            const user = await UserModel.findOne({ email: email.toLowerCase() });
+            if (!user && purpose === 'login') {
+                return res.status(400).json({
+                    message: 'Invalid credentials',
+                    error: 'No account found with this email'
+                });
+            }
+        }
+
         if (purpose === 'login' || purpose === 'signup') {
-            const user = await UserModel.findOne({ email });
+            const user = await UserModel.findOne({ email: email.toLowerCase() });
             if (purpose === 'login' && !user) {
                 return res.status(404).json({
                     error: 'User not found'
@@ -72,104 +91,231 @@ const sendOTP = async (req, res) => {
             }
         }
 
-        const otp = generateOTP();
+        // Generate OTP
+        const otp = exports.generateOTP();
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+        // Log OTP before saving
+        console.log('Generated OTP:', {
+            otp,
+            type: typeof otp,
+            length: otp.length,
+            timestamp: new Date().toISOString()
+        });
 
         // Save OTP to database
         const otpRecord = new OTPModel({
-            email,
+            email: email.toLowerCase(),
             otp,
             expiresAt,
             purpose
         });
-        await otpRecord.save();
-
-        // Send email with enhanced error handling
-        const mailOptions = {
-            from: process.env.FROM_EMAIL || 'noreply@ecomexpress.com',
-            to: email,
-            subject: 'Your OTP Code',
-            text: `Your OTP code is: ${otp}. This code will expire in 5 minutes.`
-        };
 
         try {
-            // First clean up any existing OTP records for this email and purpose
-            await OTPModel.deleteMany({
-                email,
-                purpose,
-                $or: [
-                    { expiresAt: { $lt: new Date() } },
-                    { createdAt: { $lt: new Date(Date.now() - 5 * 60 * 1000) } }
-                ]
+            await otpRecord.save();
+            console.log('OTP saved successfully:', {
+                _id: otpRecord._id,
+                email: otpRecord.email,
+                otp: otpRecord.otp,
+                purpose: otpRecord.purpose,
+                expiresAt: otpRecord.expiresAt.toISOString(),
+                timestamp: new Date().toISOString()
             });
 
-            // Send email with enhanced error handling
-            await new Promise((resolve, reject) => {
-                transporter.sendMail(mailOptions, (error, info) => {
-                    if (error) {
-                        console.error('Failed to send email:', error);
-                        reject(error);
-                    } else {
-                        console.log('Email sent:', info.response);
-                        resolve(info);
-                    }
+            // Send email with OTP
+            const mailOptions = {
+                from: process.env.SMTP_USER,
+                to: email,
+                subject: `Your ${purpose === 'login' ? 'Login' : 'Verification'} OTP`,
+                text: `Your ${purpose === 'login' ? 'Login' : 'Verification'} OTP is: ${otp}\n\nThis OTP will expire in 5 minutes. Please do not share it with anyone.`,
+                html: `
+                    <p>Your ${purpose === 'login' ? 'Login' : 'Verification'} OTP is: <strong>${otp}</strong></p>
+                    <p>This OTP will expire in 5 minutes. Please do not share it with anyone.</p>
+                `
+            };
+
+            try {
+                await transporter.sendMail(mailOptions);
+                console.log('OTP email sent successfully:', {
+                    to: email,
+                    purpose,
+                    timestamp: new Date().toISOString()
                 });
-            });
 
-            res.json({
-                message: 'OTP sent successfully',
-                email: email, // Return email for frontend reference
-                expiresAt: expiresAt // Return expiration time for frontend
-            });
-        } catch (error) {
-            console.error('Email sending failed:', error);
-            
-            // Clean up failed OTP record
-            await OTPModel.deleteOne({ _id: otpRecord._id });
-            
-            // Clean up any other failed attempts for this email
-            await OTPModel.deleteMany({
-                email,
-                purpose,
-                $or: [
-                    { expiresAt: { $lt: new Date() } },
-                    { createdAt: { $lt: new Date(Date.now() - 5 * 60 * 1000) } }
-                ]
-            });
-            
+                // Return success response
+                return res.json({
+                    message: 'OTP sent successfully',
+                    email: email,
+                    expiresAt: expiresAt
+                });
+            } catch (mailError) {
+                console.error('Email sending failed:', mailError);
+                
+                // Clean up the OTP record if email sending fails
+                await OTPModel.findByIdAndDelete(otpRecord._id);
+                
+                return res.status(500).json({
+                    message: 'Failed to send OTP',
+                    error: 'Failed to send email'
+                });
+            }
+        } catch (saveError) {
+            console.error('OTP saving failed:', saveError);
             return res.status(500).json({
-                message: 'Failed to send OTP',
-                error: 'Failed to send email'
+                error: 'Failed to save OTP'
             });
         }
     } catch (error) {
         console.error('Send OTP error:', error);
-        res.status(500).json({
+        if (!res) {
+            throw new Error('Failed to send OTP');
+        }
+        return res.status(500).json({
             error: 'Failed to send OTP'
         });
     }
 };
 
-const verifyOTP = async (req, res) => {
+exports.verifyOTP = async (req, res) => {
     try {
         const { email, otp, purpose } = req.body;
         
         if (!email || !otp || !purpose) {
+            if (!res) {
+                throw new Error('Email and purpose are required');
+            }
             return res.status(400).json({
+                message: 'Invalid request',
                 error: 'Email, OTP, and purpose are required'
             });
         }
 
-        const otpRecord = await OTPModel.findOne({
-            email,
-            otp,
+        // Convert email to lowercase for consistent matching
+        const lowerCaseEmail = email.toLowerCase();
+        
+        // Log verification parameters
+        console.log('🔍 Attempting to verify OTP with:', {
+            email: lowerCaseEmail,
+            otp: otp, // Log the exact OTP value received
+            otpType: typeof otp,
+            otpLength: otp.length,
+            purpose,
+            currentTime: new Date().toISOString()
+        });
+
+        // Convert OTP to string if it's not already
+        const otpString = String(otp).trim(); // Explicitly trim spaces
+        console.log('🔄 Converting OTP to string:', {
+            original: otp,
+            converted: otpString,
+            originalType: typeof otp,
+            convertedType: typeof otpString,
+            originalLength: otp.length,
+            convertedLength: otpString.length,
+            timestamp: new Date().toISOString()
+        });
+
+        // Log all OTPs in database before verification
+        const allOtps = await OTPModel.find({ email: lowerCaseEmail }).sort({ createdAt: -1 });
+        console.log('📄 All OTPs in DB for verification:', allOtps.map(dbOtp => ({
+            _id: dbOtp._id,
+            otp: dbOtp.otp,
+            purpose: dbOtp.purpose,
+            expiresAt: dbOtp.expiresAt.toISOString(),
+            createdAt: dbOtp.createdAt.toISOString(),
+            otpType: typeof dbOtp.otp,
+            otpLength: dbOtp.otp.length,
+            expiresAtTimestamp: dbOtp.expiresAt.getTime()
+        })));
+
+        // Log search parameters for MongoDB
+        console.log('🔍 MongoDB search parameters:', {
+            email: lowerCaseEmail,
+            otp: otpString, // Use the converted string
+            purpose,
+            expiresAt: { $gt: new Date() },
+            currentTime: new Date().toISOString(),
+            timestamp: new Date().toISOString(),
+            currentTimeTimestamp: new Date().getTime()
+        });
+
+        // Add a check for exact OTP match
+        const matchingOtps = allOtps.filter(dbOtp => 
+            dbOtp.otp === otpString && 
+            dbOtp.purpose === purpose && 
+            dbOtp.expiresAt > new Date()
+        );
+        
+        console.log('🔍 Matching OTPs found:', matchingOtps.map(match => ({
+            _id: match._id,
+            otp: match.otp,
+            purpose: match.purpose,
+            expiresAt: match.expiresAt.toISOString(),
+            createdAt: match.createdAt.toISOString(),
+            expiresAtTimestamp: match.expiresAt.getTime()
+        })));
+
+        const otpRecord = matchingOtps[0] || await OTPModel.findOne({
+            email: lowerCaseEmail,
+            otp: otpString, // Use the converted string
             purpose,
             expiresAt: { $gt: new Date() }
         });
 
+        // Log the result of the query
+        console.log('📄 OTP record found:', otpRecord ? {
+            _id: otpRecord._id,
+            email: otpRecord.email,
+            otp: otpRecord.otp,
+            purpose: otpRecord.purpose,
+            expiresAt: otpRecord.expiresAt.toISOString(),
+            createdAt: otpRecord.createdAt.toISOString()
+        } : null);
+
         if (!otpRecord) {
+            // Log all OTPs for this user to help debug
+            const allOtps = await OTPModel.find({ email: lowerCaseEmail }).sort({ createdAt: -1 });
+            console.log('Found OTPs for debugging:', allOtps.map(dbOtp => ({
+                _id: dbOtp._id,
+                otp: dbOtp.otp,
+                purpose: dbOtp.purpose,
+                expiresAt: dbOtp.expiresAt.toISOString(),
+                createdAt: dbOtp.createdAt.toISOString(),
+                otpType: typeof dbOtp.otp,
+                otpLength: dbOtp.otp.length,
+                expiresAtTimestamp: dbOtp.expiresAt.getTime()
+            })));
+            
+            // Log current time and search parameters
+            console.error('OTP verification failed:', {
+                timestamp: new Date().toISOString(),
+                searchParams: {
+                    email: lowerCaseEmail,
+                    otp: otpString, // Use the converted string
+                    purpose,
+                    expiresAt: { $gt: new Date() },
+                    currentTime: new Date().toISOString(),
+                    currentTimeTimestamp: new Date().getTime()
+                }
+            });
+            
+            if (!res) {
+                throw new Error('Email and purpose are required');
+            }
             return res.status(400).json({
-                error: 'Invalid or expired OTP'
+                success: false,
+                error: 'Invalid or expired OTP',
+                debug: {
+                    timestamp: new Date().toISOString(),
+                    searchParams: {
+                        email: lowerCaseEmail,
+                        otp: otpString, // Use the converted string
+                        purpose,
+                        expiresAt: { $gt: new Date() },
+                        currentTime: new Date().toISOString(),
+                        currentTimeTimestamp: new Date().getTime()
+                    }
+                }
             });
         }
 
@@ -178,30 +324,27 @@ const verifyOTP = async (req, res) => {
 
         // Generate JWT token for login
         if (purpose === 'login') {
-            const user = await UserModel.findOne({ email });
-            const token = jwt.sign(
-                { userId: user._id },
-                process.env.JWT_SECRET,
-                { expiresIn: '24h' }
-            );
-            
-            res.json({
+            // Generate JWT token
+            const token = jwt.sign({ userId: otpRecord.email }, process.env.JWT_SECRET || 'your-secret-key', {
+                expiresIn: '24h'
+            });
+
+            return res.status(200).json({
+                success: true,
                 message: 'OTP verified successfully',
                 token,
                 user: {
-                    id: user._id,
-                    email: user.email,
-                    name: user.name
+                    id: otpRecord.email,
+                    email: otpRecord.email
                 }
-            });
-        } else {
-            res.json({
-                message: 'OTP verified successfully'
             });
         }
     } catch (error) {
         console.error('Verify OTP error:', error);
-        res.status(500).json({
+        if (!res) {
+            throw new Error('Failed to verify OTP');
+        }
+        return res.status(500).json({
             error: 'Failed to verify OTP'
         });
     }

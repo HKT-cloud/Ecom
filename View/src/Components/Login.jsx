@@ -31,10 +31,10 @@ const Login = ({ onOTPVerification }) => {
         localStorage.setItem('temp_user', JSON.stringify(response.data.user));
         
         // Send OTP for verification
-        await sendOTP({ email, purpose: 'signin' });
+        await sendOTP({ email, purpose: 'login' });
         
         // Trigger OTP verification
-        onOTPVerification(email, 'signin');
+        onOTPVerification(email, 'login');
       } else {
         throw new Error(response.data.error || 'Login failed');
       }

@@ -44,6 +44,12 @@ const Signup = ({ onOTPVerification }) => {
       return;
     }
 
+    if (!confirmPassword.trim()) {
+      setError('Please confirm your password');
+      setLoading(false);
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
@@ -64,8 +70,8 @@ const Signup = ({ onOTPVerification }) => {
         email, 
         password
       });
-      
-      if (response.data.token) {
+
+      if (response.data.success && response.data.requiresOTP) {
         // Store token temporarily before OTP verification
         localStorage.setItem('temp_token', response.data.token);
         localStorage.setItem('temp_user', JSON.stringify({
@@ -73,13 +79,16 @@ const Signup = ({ onOTPVerification }) => {
           name: name
         }));
         
-        // Send OTP for verification
-        await sendOTP({ email, purpose: 'signup' });
-        
         // Trigger OTP verification
         onOTPVerification(email, 'signup');
+      } else if (response.data.success && response.data.token) {
+        // If token is provided, navigate to dashboard
+        localStorage.setItem('token', response.data.token);
+        navigate('/dashboard');
+      } else if (response.data.error) {
+        throw new Error(response.data.error);
       } else {
-        throw new Error(response.data.error || 'Registration failed');
+        throw new Error('Registration failed');
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -137,6 +146,18 @@ const Signup = ({ onOTPVerification }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
+                  required
+                />
+              </div>
+              <div className="form-group mt-3">
+                <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
                   required
                 />
               </div>

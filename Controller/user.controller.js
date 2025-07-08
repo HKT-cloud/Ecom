@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const UserModel = require('../Module/user.model');
+const { sendOTP } = require('./otp.controller');
 
 const login = async (req, res) => {
     try {
@@ -110,13 +111,27 @@ const signup = async (req, res) => {
 
         await user.save();
 
+        // Generate token for OTP verification
         const token = jwt.sign(
             { userId: user._id },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET || 'your-secret-key',
             { expiresIn: '24h' }
         );
 
+        // Send OTP for verification
+        await sendOTP({
+            email: user.email,
+            purpose: 'signup'
+        }).catch(error => {
+            console.error('Failed to send OTP:', error);
+            throw new Error('Failed to send OTP. Please try again.');
+        });
+
+        // Return success with OTP verification required
         res.status(201).json({
+            success: true,
+            message: 'Account created successfully. Please verify your email with OTP',
+            requiresOTP: true,
             token,
             user: {
                 id: user._id,
