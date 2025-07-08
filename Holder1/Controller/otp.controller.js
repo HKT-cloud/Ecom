@@ -172,29 +172,32 @@ const verifyOTP = async (req, res) => {
         const lowerCaseEmail = email.toLowerCase();
         
         // Log verification parameters
-        console.log('Verifying OTP with:', {
+        console.log('🔍 Attempting to verify OTP with:', {
             email: lowerCaseEmail,
             otp: otp.trim(),
             purpose,
-            currentTimestamp: new Date().toISOString()
+            currentTime: new Date().toISOString(),
+            otpType: typeof otp.trim()
         });
 
         // Log all OTPs in database before verification
         const allOtps = await OTPModel.find({ email: lowerCaseEmail }).sort({ createdAt: -1 });
-        console.log('All OTPs in DB for verification:', allOtps.map(otp => ({
+        console.log('📄 All OTPs in DB for verification:', allOtps.map(otp => ({
             _id: otp._id,
             otp: otp.otp,
             purpose: otp.purpose,
             expiresAt: otp.expiresAt.toISOString(),
-            createdAt: otp.createdAt.toISOString()
+            createdAt: otp.createdAt.toISOString(),
+            otpType: typeof otp.otp
         })));
 
         // Log search parameters for MongoDB
-        console.log('MongoDB search parameters:', {
+        console.log('🔍 MongoDB search parameters:', {
             email: lowerCaseEmail,
             otp: otp.trim(),
             purpose,
-            expiresAt: { $gt: new Date() }
+            expiresAt: { $gt: new Date() },
+            currentTime: new Date().toISOString()
         });
 
         const otpRecord = await OTPModel.findOne({
@@ -203,6 +206,16 @@ const verifyOTP = async (req, res) => {
             purpose,
             expiresAt: { $gt: new Date() }
         });
+
+        // Log the result of the query
+        console.log('📄 OTP record found:', otpRecord ? {
+            _id: otpRecord._id,
+            email: otpRecord.email,
+            otp: otpRecord.otp,
+            purpose: otpRecord.purpose,
+            expiresAt: otpRecord.expiresAt.toISOString(),
+            createdAt: otpRecord.createdAt.toISOString()
+        } : null);
 
         if (!otpRecord) {
             // Log all OTPs for this user to help debug
