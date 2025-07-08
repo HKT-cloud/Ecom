@@ -98,6 +98,12 @@ const sendOTP = async (req, res) => {
             purpose
         });
         await otpRecord.save();
+        console.log('OTP saved to DB:', {
+            email: otpRecord.email,
+            otp: otpRecord.otp,
+            purpose: otpRecord.purpose,
+            expiresAt: otpRecord.expiresAt.toISOString()
+        });
 
         // Send email with enhanced error handling
         const mailOptions = {
@@ -178,16 +184,41 @@ const verifyOTP = async (req, res) => {
         // Convert email to lowercase for consistent matching
         const lowerCaseEmail = email.toLowerCase();
         
+        // Log verification parameters
+        console.log('Verifying OTP with:', {
+            email: lowerCaseEmail,
+            otp: otp.trim(),
+            purpose,
+            currentTimestamp: new Date().toISOString()
+        });
+
         const otpRecord = await OTPModel.findOne({
             email: lowerCaseEmail,
-            otp,
+            otp: otp.trim(),
             purpose,
             expiresAt: { $gt: new Date() }
         });
 
         if (!otpRecord) {
+            // Log all OTPs for this user to help debug
+            const allOtps = await OTPModel.find({ email: lowerCaseEmail, purpose });
+            console.log('Found OTPs for debugging:', allOtps.map(otp => ({
+                _id: otp._id,
+                otp: otp.otp,
+                expiresAt: otp.expiresAt.toISOString(),
+                createdAt: otp.createdAt.toISOString()
+            })));
             return res.status(400).json({
-                error: 'Invalid or expired OTP'
+                error: 'Invalid or expired OTP',
+                debug: {
+                    currentTime: new Date().toISOString(),
+                    searchParams: {
+                        email: lowerCaseEmail,
+                        otp: otp.trim(),
+                        purpose,
+                        expiresAt: { $gt: new Date() }
+                    }
+                }
             });
         }
 
