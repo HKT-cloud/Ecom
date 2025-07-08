@@ -15,13 +15,15 @@ const transporter = nodemailer.createTransport({
 });
 
 // Verify SMTP connection
-transporter.verify((error, success) => {
-    if (error) {
+(async () => {
+    try {
+        await transporter.verify();
+        console.log('SMTP connection verified');
+    } catch (error) {
         console.error('SMTP connection error:', error);
         throw new Error('Failed to verify SMTP connection');
     }
-    console.log('SMTP connection verified:', success);
-});
+})();
 
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
