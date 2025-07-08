@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
-import '../../styles/blogs.css';
+import '../styles/blogs.css';
 
 const Blogs = () => {
   return (

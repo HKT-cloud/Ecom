@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
-import '../styles/about.css';
+import './styles/about.css';
 
 const AboutUs = () => {
   return (

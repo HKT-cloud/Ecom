@@ -7,12 +7,27 @@ export default defineConfig({
   server: {
     proxy: {
       '/user': {
-        target: 'http://localhost:3000',
+        target: 'https://ecomexpress-dn3d.onrender.com',
         changeOrigin: true,
-        secure: false,
+        secure: true,
         ws: true,
         rewrite: (path) => path.replace(/^\/user/, '')
+      },
+      '/otp': {
+        target: 'https://ecomexpress-dn3d.onrender.com',
+        changeOrigin: true,
+        secure: true,
+        ws: true,
+        rewrite: (path) => path.replace(/^\/otp/, '')
       }
     }
+  },
+  preview: {
+    host: true,
+    port: 4173,
+    allowedHosts: ['ecomexpress-dn3d.onrender.com']
+  },
+  define: {
+    'process.env.VITE_API_URL': JSON.stringify('https://ecomexpress-dn3d.onrender.com')
   }
 })

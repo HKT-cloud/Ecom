@@ -7,25 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "proxy": {
-    "/api": {
-      "target": "http://localhost:3000",
-      "changeOrigin": true,
-      "secure": false,
-      "logLevel": "debug"
-    }
+    "preview": "vite preview --host --port $PORT"
   },
   "dependencies": {
-    "vite": "^5.0.0",
-    "@vitejs/plugin-react": "^4.2.1",
-    "@types/react": "^18.2.48",
-    "@types/react-dom": "^18.2.18",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "axios": "^1.10.0",
     "bootstrap": "^5.3.6",
+    "dotenv": "^17.0.1",
     "framer-motion": "^12.23.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.10",
@@ -36,9 +25,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
+    "dotenv": "^16.3.1",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",

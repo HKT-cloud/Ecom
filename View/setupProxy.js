@@ -1,16 +1,42 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const process = require('process');
+
+const getBackendUrl = () => {
+    // Always use the production URL since we're deploying on Render
+    return 'https://ecomexpress-dn3d.onrender.com';
+};
 
 module.exports = function(app) {
-    app.use(
-        '/user',
-        createProxyMiddleware({
-            target: 'http://localhost:3030',
-            changeOrigin: true,
-            credentials: true,
-            onProxyRes: (proxyRes) => {
-                proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-                proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
-            }
-        })
-    );
+    const backendUrl = getBackendUrl();
+    console.log('Proxying requests to:', backendUrl);
+
+    const proxyOptions = {
+        target: backendUrl,
+        changeOrigin: true,
+        credentials: true,
+        secure: process.env.NODE_ENV === 'production',
+        logLevel: 'debug',
+        onError: (err, req, res) => {
+            console.error('Proxy error:', {
+                error: err.message,
+                request: {
+                    method: req.method,
+                    url: req.url,
+                    headers: req.headers
+                }
+            });
+        },
+        onProxyRes: (proxyRes) => {
+            proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+            proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
+            proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
+            proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With';
+        }
+    };
+
+    // Proxy all API routes
+    app.use('/user', createProxyMiddleware(proxyOptions));
+    // Proxy OTP routes
+    app.use('/otp', createProxyMiddleware(proxyOptions));
 };
+            

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
-import '../styles/order-lists.css';
+import './styles/order-lists.css';
 
 const OrderLists = () => {
   const [formData, setFormData] = useState({

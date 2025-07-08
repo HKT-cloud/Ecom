@@ -18,7 +18,7 @@ import ContactUs from './Components/Navbar_Dropdowns/Contact_Us';
 import News from './Components/Navbar_Dropdowns/News';
 import Blogs from './Components/Navbar_Dropdowns/Blogs';
 import OrderLists from './Components/OrderLists';
-import PageTransition from './components/PageTransition';
+import PageTransition from './Components/PageTransition';
 import './App.css';
 
 function App() {

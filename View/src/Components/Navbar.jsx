@@ -4,8 +4,8 @@ import { Container, Navbar as BsNavbar, Nav, Dropdown, Offcanvas } from 'react-b
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { motion } from 'framer-motion';
-import '../styles/navbar.css';
-import '../styles/login-page.css';
+import './styles/navbar.css';
+import './styles/login-page.css';
 
 const Navbar = ({ onOTPVerification }) => {
   const navigate = useNavigate();
@@ -97,8 +97,197 @@ const Navbar = ({ onOTPVerification }) => {
               <Dropdown.Toggle
                 as={Nav.Link}
                 className="dropdown-link nav-item"
-                id="services-dropdown"
+                id="solutions-dropdown"
               >
+                <motion.span
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  Solutions
+                </motion.span>
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="dropdown-menu">
+                <Dropdown.Item as={Link} to="/shipping-services" className="dropdown-item">
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    Shipping Services
+                  </motion.span>
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to="/fulfillment-services" className="dropdown-item">
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    Fulfillment Services
+                  </motion.span>
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to="/sameday-delivery" className="dropdown-item">
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    Same Day Delivery
+                  </motion.span>
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to="/bulk-services" className="dropdown-item">
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    Heavy & Bulk Services
+                  </motion.span>
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+
+            <Dropdown
+              show={showCompanyDropdown}
+              onToggle={(isOpen) => setShowCompanyDropdown(isOpen)}
+              onSelect={handleDropdownClose}
+              className="nav-dropdown"
+            >
+              <Dropdown.Toggle
+                as={Nav.Link}
+                className="dropdown-link nav-item"
+                id="company-dropdown"
+              >
+                <motion.span
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  Company
+                </motion.span>
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="dropdown-menu">
+                <Dropdown.Item as={Link} to="/about-us" className="dropdown-item">
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    About Us
+                  </motion.span>
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to="/careers" className="dropdown-item">
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    Careers
+                  </motion.span>
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to="/contact-us" className="dropdown-item">
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    Contact Us
+                  </motion.span>
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+
+            <Dropdown
+              show={showMediaDropdown}
+              onToggle={(isOpen) => setShowMediaDropdown(isOpen)}
+              onSelect={handleDropdownClose}
+              className="nav-dropdown"
+            >
+              <Dropdown.Toggle
+                as={Nav.Link}
+                className="dropdown-link nav-item"
+                id="media-dropdown"
+              >
+                <motion.span
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  Media
+                </motion.span>
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="dropdown-menu">
+                <Dropdown.Item as={Link} to="/news" className="dropdown-item">
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    News
+                  </motion.span>
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to="/blogs" className="dropdown-item">
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    Blogs
+                  </motion.span>
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+
+            <Dropdown className="nav-dropdown">
+              <Dropdown.Toggle
+                as={Nav.Link}
+                className="dropdown-link nav-item"
+                id="support-dropdown"
+              >
+                <motion.span
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  Support
+                </motion.span>
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="dropdown-menu">
+                <Dropdown.Item as={Link} to="/help-center" className="dropdown-item">
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    Help Center
+                  </motion.span>
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to="/faqs" className="dropdown-item">
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    FAQs
+                  </motion.span>
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to="/order-status" className="dropdown-item">
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    Order Status
+                  </motion.span>
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          </Nav>
+        </BsNavbar.Collapse>
+        <BsNavbar.Collapse className="justify-content-end">
+          <Nav className="me-0">
+            <Dropdown>
+              <Dropdown.Toggle as={Nav.Link} className="dropdown-link nav-item">
                 Services
               </Dropdown.Toggle>
               <Dropdown.Menu className="dropdown-menu">

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Alert, Spinner } from 'react-bootstrap';
-import api from '../config/axiosConfig';
-import '../styles/login-page.css';
+import { login, sendOTP } from '../config/axiosConfig';
+import './styles/login-page.css';
 
 const Login = ({ onOTPVerification }) => {
   const [email, setEmail] = useState('');
@@ -16,8 +16,14 @@ const Login = ({ onOTPVerification }) => {
     setError('');
     setLoading(true);
     try {
-      // First, attempt to login
-      const response = await api.post('/login', { email, password });
+      // First, attempt to login with properly formatted email
+      const formattedEmail = email.trim().toLowerCase();
+      console.log('Attempting login with email:', formattedEmail);
+      
+      const response = await login({ 
+        email: formattedEmail, 
+        password 
+      });
       
       if (response.data.token) {
         // Store token temporarily before OTP verification
@@ -25,7 +31,7 @@ const Login = ({ onOTPVerification }) => {
         localStorage.setItem('temp_user', JSON.stringify(response.data.user));
         
         // Send OTP for verification
-        await api.post('/otp/send-otp', { email, purpose: 'signin' });
+        await sendOTP({ email, purpose: 'signin' });
         
         // Trigger OTP verification
         onOTPVerification(email, 'signin');
