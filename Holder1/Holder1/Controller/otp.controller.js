@@ -24,7 +24,7 @@ transporter.verify((error, success) => {
     console.log('SMTP connection verified');
 });
 
-exports.generateOTP = () => {
+const generateOTP = () => {
     // Generate 6-digit OTP as string
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     console.log('Generated OTP:', {
@@ -36,7 +36,7 @@ exports.generateOTP = () => {
     return otp;
 };
 
-exports.sendOTP = async (req, res) => {
+const sendOTP = async (req, res) => {
     try {
         const { email, purpose } = req.body;
         
@@ -58,6 +58,7 @@ exports.sendOTP = async (req, res) => {
             });
         }
 
+        // Validate OTP purpose
         const validPurposes = ['login', 'signup', 'password_reset'];
         if (!validPurposes.includes(purpose.toLowerCase())) {
             console.error('Invalid OTP purpose:', purpose);
@@ -67,6 +68,7 @@ exports.sendOTP = async (req, res) => {
             });
         }
 
+        // Check if user exists for login/password_reset purposes
         if (purpose !== 'signup') {
             const user = await UserModel.findOne({ email: email.toLowerCase() });
             if (!user && purpose === 'login') {
@@ -77,6 +79,7 @@ exports.sendOTP = async (req, res) => {
             }
         }
 
+        // Check if user exists for login/signup
         if (purpose === 'login' || purpose === 'signup') {
             const user = await UserModel.findOne({ email: email.toLowerCase() });
             if (purpose === 'login' && !user) {
@@ -92,14 +95,17 @@ exports.sendOTP = async (req, res) => {
         }
 
         // Generate OTP
-        const otp = exports.generateOTP();
+        const otp = generateOTP();
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
         // Log OTP before saving
-        console.log('Generated OTP:', {
+        console.log('Saving OTP to DB:', {
+            email: email.toLowerCase(),
             otp,
-            type: typeof otp,
-            length: otp.length,
+            purpose,
+            expiresAt: expiresAt.toISOString(),
+            otpType: typeof otp,
+            otpLength: otp.length,
             timestamp: new Date().toISOString()
         });
 
@@ -110,82 +116,90 @@ exports.sendOTP = async (req, res) => {
             expiresAt,
             purpose
         });
+        await otpRecord.save();
+
+        // Log saved OTP record
+        console.log('OTP saved successfully:', {
+            _id: otpRecord._id,
+            email: otpRecord.email,
+            otp: otpRecord.otp,
+            purpose: otpRecord.purpose,
+            expiresAt: otpRecord.expiresAt.toISOString(),
+            createdAt: otpRecord.createdAt.toISOString()
+        });
+
+        // Send email with enhanced error handling
+        const mailOptions = {
+            from: process.env.FROM_EMAIL || 'noreply@ecomexpress.com',
+            to: email,
+            subject: 'Your OTP Code',
+            text: `Your OTP code is: ${otp}. This code will expire in 5 minutes.`
+        };
 
         try {
-            await otpRecord.save();
-            console.log('OTP saved successfully:', {
-                _id: otpRecord._id,
-                email: otpRecord.email,
-                otp: otpRecord.otp,
-                purpose: otpRecord.purpose,
-                expiresAt: otpRecord.expiresAt.toISOString(),
-                timestamp: new Date().toISOString()
+            // First clean up any existing OTP records for this email and purpose
+            await OTPModel.deleteMany({
+                email,
+                purpose,
+                $or: [
+                    { expiresAt: { $lt: new Date() } },
+                    { createdAt: { $lt: new Date(Date.now() - 5 * 60 * 1000) } }
+                ]
             });
 
-            // Send email with OTP
-            const mailOptions = {
-                from: process.env.SMTP_USER,
-                to: email,
-                subject: `Your ${purpose === 'login' ? 'Login' : 'Verification'} OTP`,
-                text: `Your ${purpose === 'login' ? 'Login' : 'Verification'} OTP is: ${otp}\n\nThis OTP will expire in 5 minutes. Please do not share it with anyone.`,
-                html: `
-                    <p>Your ${purpose === 'login' ? 'Login' : 'Verification'} OTP is: <strong>${otp}</strong></p>
-                    <p>This OTP will expire in 5 minutes. Please do not share it with anyone.</p>
-                `
-            };
+            // Send email with enhanced error handling
+            await new Promise((resolve, reject) => {
+                transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        console.error('Failed to send email:', error);
+                        reject(error);
+                    } else {
+                        console.log('Email sent:', info.response);
+                        resolve(info);
+                    }
+                });
+            });
 
-            try {
-                await transporter.sendMail(mailOptions);
-                console.log('OTP email sent successfully:', {
-                    to: email,
-                    purpose,
-                    timestamp: new Date().toISOString()
-                });
-
-                // Return success response
-                return res.json({
-                    message: 'OTP sent successfully',
-                    email: email,
-                    expiresAt: expiresAt
-                });
-            } catch (mailError) {
-                console.error('Email sending failed:', mailError);
-                
-                // Clean up the OTP record if email sending fails
-                await OTPModel.findByIdAndDelete(otpRecord._id);
-                
-                return res.status(500).json({
-                    message: 'Failed to send OTP',
-                    error: 'Failed to send email'
-                });
-            }
-        } catch (saveError) {
-            console.error('OTP saving failed:', saveError);
+            res.json({
+                message: 'OTP sent successfully',
+                email: email, // Return email for frontend reference
+                expiresAt: expiresAt // Return expiration time for frontend
+            });
+        } catch (error) {
+            console.error('Email sending failed:', error);
+            
+            // Clean up failed OTP record
+            await OTPModel.deleteOne({ _id: otpRecord._id });
+            
+            // Clean up any other failed attempts for this email
+            await OTPModel.deleteMany({
+                email,
+                purpose,
+                $or: [
+                    { expiresAt: { $lt: new Date() } },
+                    { createdAt: { $lt: new Date(Date.now() - 5 * 60 * 1000) } }
+                ]
+            });
+            
             return res.status(500).json({
-                error: 'Failed to save OTP'
+                message: 'Failed to send OTP',
+                error: 'Failed to send email'
             });
         }
     } catch (error) {
         console.error('Send OTP error:', error);
-        if (!res) {
-            throw new Error('Failed to send OTP');
-        }
-        return res.status(500).json({
+        res.status(500).json({
             error: 'Failed to send OTP'
         });
     }
 };
 
-exports.verifyOTP = async (req, res) => {
+const verifyOTP = async (req, res) => {
     try {
         const { email, otp, purpose } = req.body;
         
         if (!email || !otp || !purpose) {
-            if (!res) {
-                throw new Error('Email and purpose are required');
-            }
             return res.status(400).json({
-                message: 'Invalid request',
                 error: 'Email, OTP, and purpose are required'
             });
         }
@@ -299,9 +313,6 @@ exports.verifyOTP = async (req, res) => {
                 }
             });
             
-            if (!res) {
-                throw new Error('Email and purpose are required');
-            }
             return res.status(400).json({
                 success: false,
                 error: 'Invalid or expired OTP',
@@ -341,10 +352,7 @@ exports.verifyOTP = async (req, res) => {
         }
     } catch (error) {
         console.error('Verify OTP error:', error);
-        if (!res) {
-            throw new Error('Failed to verify OTP');
-        }
-        return res.status(500).json({
+        res.status(500).json({
             error: 'Failed to verify OTP'
         });
     }

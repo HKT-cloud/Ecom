@@ -1,0 +1,209 @@
+/* Base Colors */
+:root {
+  --primary-color: #FF69B4;
+  --secondary-color: #FF1493;
+  --text-color: #ffffff;
+  --background-color: #000000;
+}
+
+/* Container Styles */
+.about-container {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  padding: 2rem 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Section Styles */
+.about-section,
+.values-section,
+.journey-section,
+.team-section,
+.csr-section,
+.awards-section {
+  padding: 4rem 0;
+}
+
+/* Section Titles */
+.section-title {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 600;
+}
+
+/* Description Text */
+.section-description {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+  font-weight: 400;
+}
+
+/* Value Cards */
+.value-card {
+  background-color: rgba(255, 105, 180, 0.1);
+  padding: 2rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  transition: transform 0.3s ease;
+  font-weight: 400;
+}
+
+.value-card:hover {
+  transform: translateY(-5px);
+}
+
+.value-card h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding: 2rem 0;
+}
+
+.timeline:before {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  left: 50%;
+  margin-left: -1px;
+  background-color: var(--primary-color);
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 2rem;
+  padding-left: 2rem;
+}
+
+.timeline-item .year {
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: rgba(255, 105, 180, 0.1);
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* Team Members */
+.team-member {
+  background-color: rgba(255, 105, 180, 0.1);
+  padding: 2rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  text-align: center;
+  transition: transform 0.3s ease;
+  font-weight: 400;
+}
+
+.team-member:hover {
+  transform: translateY(-5px);
+}
+
+.team-member h3 {
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+/* CSR Grid */
+.csr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.csr-item {
+  background-color: rgba(255, 105, 180, 0.1);
+  padding: 2rem;
+  border-radius: 10px;
+  transition: transform 0.3s ease;
+  font-weight: 400;
+}
+
+.csr-item:hover {
+  transform: translateY(-5px);
+}
+
+.csr-item h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Awards Grid */
+.awards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.award-item {
+  background-color: rgba(255, 105, 180, 0.1);
+  padding: 2rem;
+  border-radius: 10px;
+  transition: transform 0.3s ease;
+  font-weight: 400;
+}
+
+.award-item:hover {
+  transform: translateY(-5px);
+}
+
+.award-year {
+  color: var(--primary-color);
+  font-weight: bold;
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: rgba(255, 105, 180, 0.2);
+  border-radius: 20px;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 2rem;
+  }
+  
+  .section-description {
+    font-size: 1rem;
+  }
+  
+  .value-card,
+  .team-member,
+  .csr-item,
+  .award-item {
+    padding: 1.5rem;
+  }
+}
+
+/* Image Placeholder */
+.about-image-placeholder {
+  background-color: rgba(255, 105, 180, 0.1);
+  padding: 3rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  font-weight: 400;
+}
+
+/* Smooth Scroll */
+.about-container {
+  scroll-behavior: smooth;
+}

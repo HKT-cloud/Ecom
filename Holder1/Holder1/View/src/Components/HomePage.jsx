@@ -1,22 +1,10 @@
 import React from 'react';
 import './styles/home.css';
-import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
-  const navigate = useNavigate();
-  
   // Get user data from localStorage
   const userData = JSON.parse(localStorage.getItem('user')) || {};
   const userEmail = userData.email || 'Guest';
-
-  const handleLogout = () => {
-    // Clear user data from localStorage
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    
-    // Redirect to login page
-    navigate('/login');
-  };
 
   return (
     <div className="home-page">
@@ -30,10 +18,7 @@ const HomePage = () => {
               className="hero-logo"
             />
             <h1 className="hero-title">Welcome to EcomExpress</h1>
-            <div className="user-info">
-              <h3 className="user-email">{userEmail}</h3>
-              <button className="logout-button" onClick={handleLogout}>Logout</button>
-            </div>
+            <h3>{userEmail}</h3>
             <div className="hero-description">
               Experience excellence in logistics with our comprehensive solutions for shipping, warehousing, and international delivery.
             </div>

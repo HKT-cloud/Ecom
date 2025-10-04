@@ -19,8 +19,8 @@ const OTPVerification = ({ email, purpose, onVerified }) => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
+        e.preventDefault()
+        setError('')
         try {
             // Debug log before sending OTP
             console.log('Sending OTP for verification:', {
@@ -32,14 +32,60 @@ const OTPVerification = ({ email, purpose, onVerified }) => {
                 otpLength: otp.length
             });
 
-            // Verify OTP
-            const response = await api.post('/otp/verify-otp', {
-                email: email.trim().toLowerCase(), // Ensure lowercase email
-                otp: otp.trim(), // Ensure no spaces
-                purpose
-            });
+            setIsSubmitting(true);
+            try {
+                // Verify OTP
+                const response = await api.post('/otp/verify-otp', {
+                    email: email.trim().toLowerCase(), // Ensure lowercase email
+                    otp: otp.trim(), // Ensure no spaces
+                    purpose
+                });
 
-            console.log('OTP verification response:', response.data);
+                console.log('OTP verification response:', response.data);
+
+                // Check if OTP verification was successful
+                if (response.data.error) {
+                    console.error('OTP verification failed:', response.data);
+                    setError(response.data.error);
+                    return;
+                }
+
+                // Get temporary token and user data
+                const tempToken = localStorage.getItem('temp_token');
+                const tempUser = localStorage.getItem('temp_user');
+                
+                if (!tempToken || !tempUser) {
+                    console.error('No temporary data found after OTP verification');
+                    setError('Failed to retrieve user data');
+                    return;
+                }
+
+                // Parse and store user data
+                const userData = JSON.parse(tempUser);
+                
+                // Move from temp to permanent storage
+                localStorage.setItem('token', tempToken);
+                localStorage.setItem('user', JSON.stringify(userData));
+                localStorage.removeItem('temp_token');
+                localStorage.removeItem('temp_user');
+
+                // Clear form and error
+                setOTP('');
+                setError('');
+
+                // Redirect to home page
+                navigate('/', { replace: true });
+
+                // Call onVerified callback
+                if (onVerified) {
+                    onVerified(userData);
+                }
+            } catch (error) {
+                console.error('OTP verification error:', error);
+                setError(error.response?.data?.error || 'Failed to verify OTP');
+            } finally {
+                setIsSubmitting(false);
+            }
 
             // Check if OTP verification was successful
             if (!response.data.success) {

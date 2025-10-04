@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const UserModel = require('../Module/user.model');
-const { sendOTP } = require('./otp.controller');
 
 const login = async (req, res) => {
     try {
@@ -122,9 +121,6 @@ const signup = async (req, res) => {
         await sendOTP({
             email: user.email,
             purpose: 'signup'
-        }).catch(error => {
-            console.error('Failed to send OTP:', error);
-            throw new Error('Failed to send OTP. Please try again.');
         });
 
         // Return success with OTP verification required
