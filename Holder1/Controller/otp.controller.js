@@ -351,6 +351,6 @@ exports.verifyOTP = async (req, res) => {
 };
 
 module.exports = {
-    sendOTP,
-    verifyOTP
+    sendOTP: exports.sendOTP,
+    verifyOTP: exports.verifyOTP
 };
