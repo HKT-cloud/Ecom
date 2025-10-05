@@ -94,7 +94,7 @@ const signup = async (req, res) => {
         }
 
         // Convert email to lowercase before checking and saving
-        const userEmail = email.toLowerCase();
+        const userEmail = email.trim().toLowerCase();
         const existingUser = await UserModel.findOne({ email: userEmail });
         if (existingUser) {
             return res.status(400).json({
@@ -103,10 +103,14 @@ const signup = async (req, res) => {
             });
         }
 
+        // Hash the password before saving
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
         const user = new UserModel({
             name,
             email: userEmail,
-            password
+            password: hashedPassword  // Save the hashed password
         });
 
         await user.save();
@@ -119,26 +123,40 @@ const signup = async (req, res) => {
         );
 
         // Send OTP for verification
-        await sendOTP({
-            email: user.email,
-            purpose: 'signup'
-        }).catch(error => {
-            console.error('Failed to send OTP:', error);
-            throw new Error('Failed to send OTP. Please try again.');
-        });
-
-        // Return success with OTP verification required
-        res.status(201).json({
-            success: true,
-            message: 'Account created successfully. Please verify your email with OTP',
-            requiresOTP: true,
-            token,
-            user: {
-                id: user._id,
+        try {
+            await sendOTP({
                 email: user.email,
-                name: user.name
-            }
-        });
+                purpose: 'signup'
+            });
+
+            // Return success with OTP verification required
+            return res.status(201).json({
+                success: true,
+                message: 'Account created successfully. Please verify your email with OTP',
+                requiresOTP: true,
+                token,
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    name: user.name
+                }
+            });
+        } catch (otpError) {
+            console.error('Failed to send OTP:', otpError);
+            // Even if OTP fails, the user is created, so return success but with a warning
+            return res.status(201).json({
+                success: true,
+                message: 'Account created but failed to send OTP. Please request a new OTP.',
+                requiresOTP: true,
+                token,
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    name: user.name
+                },
+                warning: 'Failed to send OTP. Please request a new one.'
+            });
+        }
     } catch (error) {
         console.error('Signup error:', error);
         res.status(500).json({
