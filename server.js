@@ -23,15 +23,31 @@ console.log('Environment variables:', {
 const allowedOrigins = [
   'https://ecomexpress-0dc3.onrender.com',
   'https://ecomexpress-dn3d.onrender.com',
-  'http://localhost:5173' // For local development
+  'http://localhost:5173', // For local development
+  'http://localhost:3000', // Common React development port
+  'https://your-frontend-domain.com' // Add your production frontend domain here
 ];
 
-app.use(cors({
-  origin: allowedOrigins,
+// Log allowed origins for debugging
+console.log('Allowed CORS origins:', allowedOrigins);
+
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.error('CORS Error: Origin not allowed', { origin });
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
-}));
+  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
+app.use(cors(corsOptions));
 
 // Body parser
 app.use(express.json());
