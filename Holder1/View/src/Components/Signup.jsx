@@ -83,21 +83,33 @@ const Signup = ({ onOTPVerification }) => {
     }
 
     setLoading(true);
+    
+    console.log('=== STARTING SIGNUP ===');
+    console.log('Signup data:', { name, email, passwordLength: password.length });
+    
     try {
       // First, attempt to register
+      console.log('Calling signup API...');
       const response = await signup({ 
         name,
         email, 
         password
       });
 
+      console.log('=== SIGNUP RESPONSE RECEIVED ===');
       console.log('Signup response received:', response);
       console.log('Response data:', response?.data);
       console.log('Response status:', response?.status);
-      console.log('Full response object:', JSON.stringify(response, null, 2));
+      
+      try {
+        console.log('Full response object:', JSON.stringify(response, null, 2));
+      } catch (e) {
+        console.log('Could not stringify response');
+      }
 
       // Check if response exists and has data
       if (!response || !response.data) {
+        console.error('Response is missing or has no data');
         throw new Error('No response from server');
       }
 

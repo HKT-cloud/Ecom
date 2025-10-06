@@ -39,23 +39,28 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    const errorMessage = error.response?.data?.message || error.message;
+    const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message;
     const status = error.response?.status;
     
+    console.error('=== AXIOS ERROR ===');
     console.error('Response Error:', {
       url: error.config?.url,
       method: error.config?.method,
       status,
       message: errorMessage,
-      data: error.config?.data,
-      response: error.response?.data
+      requestData: error.config?.data,
+      responseData: error.response?.data,
+      fullError: error
     });
 
-    return Promise.reject({
-      message: errorMessage,
-      status,
-      response: error.response?.data
-    });
+    // Preserve the original error structure but add custom properties
+    const customError = new Error(errorMessage);
+    customError.response = error.response;
+    customError.status = status;
+    customError.config = error.config;
+    customError.originalError = error;
+
+    return Promise.reject(customError);
   }
 );
 
