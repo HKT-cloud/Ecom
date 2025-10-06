@@ -103,14 +103,11 @@ const signup = async (req, res) => {
             });
         }
 
-        // Hash the password before saving
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
+        // Password will be hashed automatically by the model's pre-save hook
         const user = new UserModel({
             name,
             email: userEmail,
-            password: hashedPassword  // Save the hashed password
+            password: password  // Model will hash this automatically
         });
 
         await user.save();

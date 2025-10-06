@@ -79,17 +79,22 @@ const sendOTP = async (req, res) => {
             }
         }
 
-        // Check if user exists for login/signup
-        if (purpose === 'login' || purpose === 'signup') {
+        // Check if user exists for login
+        if (purpose === 'login') {
             const user = await UserModel.findOne({ email: email.toLowerCase() });
-            if (purpose === 'login' && !user) {
+            if (!user) {
                 return res.status(404).json({
                     error: 'User not found'
                 });
             }
-            if (purpose === 'signup' && user) {
-                return res.status(400).json({
-                    error: 'Email already registered'
+        }
+        
+        // For signup, user should already exist (created during registration)
+        if (purpose === 'signup') {
+            const user = await UserModel.findOne({ email: email.toLowerCase() });
+            if (!user) {
+                return res.status(404).json({
+                    error: 'Please complete registration first'
                 });
             }
         }

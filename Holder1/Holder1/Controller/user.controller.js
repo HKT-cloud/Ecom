@@ -85,6 +85,8 @@ const signup = async (req, res) => {
     try {
         const { name, email, password } = req.body;
         
+        console.log('Signup request received:', { name, email, passwordLength: password?.length });
+        
         if (!name || !email || !password) {
             return res.status(400).json({ 
                 message: "Please provide all required fields",
@@ -93,38 +95,39 @@ const signup = async (req, res) => {
         }
 
         // Convert email to lowercase before checking and saving
-        const userEmail = email.toLowerCase();
+        const userEmail = email.trim().toLowerCase();
+        console.log('Checking for existing user with email:', userEmail);
+        
         const existingUser = await UserModel.findOne({ email: userEmail });
         if (existingUser) {
+            console.log('User already exists:', userEmail);
             return res.status(400).json({
                 message: "Email already registered",
                 error: "User already exists"
             });
         }
 
+        console.log('Creating new user...');
+        // Password will be hashed automatically by the model's pre-save hook
         const user = new UserModel({
             name,
             email: userEmail,
-            password
+            password: password  // Model will hash this automatically
         });
 
+        console.log('Saving user to database...');
         await user.save();
+        console.log('User saved successfully:', user._id);
 
-        // Generate token for OTP verification
+        // Generate token
         const token = jwt.sign(
             { userId: user._id },
             process.env.JWT_SECRET || 'your-secret-key',
             { expiresIn: '24h' }
         );
 
-        // Send OTP for verification
-        await sendOTP({
-            email: user.email,
-            purpose: 'signup'
-        });
-
-        // Return success with OTP verification required
-        res.status(201).json({
+        // Return success - OTP will be sent separately via the /otp/send-otp endpoint
+        return res.status(201).json({
             success: true,
             message: 'Account created successfully. Please verify your email with OTP',
             requiresOTP: true,
@@ -136,10 +139,15 @@ const signup = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Signup error:', error);
+        console.error('Signup error:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
         res.status(500).json({
             message: 'Internal server error',
-            error: error.message
+            error: error.message,
+            details: error.name
         });
     }
 };
