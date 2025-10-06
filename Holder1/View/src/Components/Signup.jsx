@@ -16,6 +16,7 @@ const Signup = ({ onOTPVerification }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('🚀 FORM SUBMITTED - handleSubmit called');
     setError('');
     setLoading(true);
 
