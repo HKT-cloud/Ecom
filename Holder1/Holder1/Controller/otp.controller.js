@@ -15,13 +15,14 @@ const transporter = nodemailer.createTransport({
 });
 
 
-// Verify SMTP connection
+// Verify SMTP connection (non-blocking, won't crash server)
 transporter.verify((error, success) => {
     if (error) {
         console.error('SMTP connection error:', error);
-        throw new Error('Failed to verify SMTP connection');
+        console.warn('Warning: SMTP not configured properly. OTP emails will fail.');
+    } else {
+        console.log('✅ SMTP connection verified successfully');
     }
-    console.log('SMTP connection verified');
 });
 
 const generateOTP = () => {
