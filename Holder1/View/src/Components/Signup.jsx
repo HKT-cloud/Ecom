@@ -19,6 +19,18 @@ const Signup = ({ onOTPVerification }) => {
     setError('');
     setLoading(true);
 
+    // Test backend connectivity first
+    try {
+      const healthCheck = await fetch('https://ecomexpress-dn3d.onrender.com/health');
+      const healthData = await healthCheck.json();
+      console.log('Backend health check:', healthData);
+    } catch (healthError) {
+      console.error('Backend not reachable:', healthError);
+      setError('Cannot connect to server. Please try again later.');
+      setLoading(false);
+      return;
+    }
+
     // Client-side validation
     if (!terms) {
       setError('Please accept the Terms and Conditions');
@@ -70,6 +82,10 @@ const Signup = ({ onOTPVerification }) => {
         email, 
         password
       });
+
+      console.log('Signup response received:', response);
+      console.log('Response data:', response.data);
+      console.log('Response status:', response.status);
 
       if (response.data.success && response.data.requiresOTP) {
         // Store token temporarily before OTP verification
