@@ -1,8 +1,10 @@
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
 const connectDB = require('./db');
 const userRoutes = require('./Holder1/Routes/user.routes');
 const otpRoutes = require('./Holder1/Routes/otp.routes');
+const UserModel = require('./Holder1/Module/user.model');
 
 const app = express();
 const PORT = process.env.PORT || 3000;

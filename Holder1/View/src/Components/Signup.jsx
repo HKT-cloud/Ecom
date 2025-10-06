@@ -92,7 +92,13 @@ const Signup = ({ onOTPVerification }) => {
       }
     } catch (error) {
       console.error('Registration error:', error);
-      setError(error.response?.data?.error || error.message || 'Failed to register');
+      console.error('Error details:', {
+        response: error.response,
+        responseData: error.response?.data,
+        status: error.response?.status,
+        message: error.message
+      });
+      setError(error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to register');
     } finally {
       setLoading(false);
     }
