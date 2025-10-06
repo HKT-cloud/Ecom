@@ -87,16 +87,26 @@ const Signup = ({ onOTPVerification }) => {
     console.log('=== STARTING SIGNUP ===');
     console.log('Signup data:', { name, email, passwordLength: password.length });
     
+    let response;
     try {
       // First, attempt to register
       console.log('Calling signup API...');
-      const response = await signup({ 
+      console.log('About to call signup function with:', { name, email, password: '***' });
+      
+      response = await signup({ 
         name,
         email, 
         password
+      }).catch(signupError => {
+        console.error('=== SIGNUP API CALL FAILED ===');
+        console.error('Signup error caught:', signupError);
+        console.error('Error type:', typeof signupError);
+        console.error('Error keys:', Object.keys(signupError || {}));
+        throw signupError;
       });
 
       console.log('=== SIGNUP RESPONSE RECEIVED ===');
+      console.log('Response received, type:', typeof response);
       console.log('Signup response received:', response);
       console.log('Response data:', response?.data);
       console.log('Response status:', response?.status);
