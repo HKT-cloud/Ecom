@@ -22,13 +22,21 @@ const Signup = ({ onOTPVerification }) => {
     // Test backend connectivity first
     try {
       const healthCheck = await fetch('https://ecomexpress-dn3d.onrender.com/health');
-      const healthData = await healthCheck.json();
-      console.log('Backend health check:', healthData);
+      console.log('Health check status:', healthCheck.status);
+      
+      if (healthCheck.status === 404) {
+        console.warn('Health endpoint not found - server might be using old deployment');
+        // Continue anyway - the signup endpoint might still work
+      } else if (!healthCheck.ok) {
+        throw new Error(`Server returned ${healthCheck.status}`);
+      } else {
+        const healthData = await healthCheck.json();
+        console.log('Backend health check:', healthData);
+      }
     } catch (healthError) {
-      console.error('Backend not reachable:', healthError);
-      setError('Cannot connect to server. Please try again later.');
-      setLoading(false);
-      return;
+      console.error('Backend health check failed:', healthError);
+      // Don't block signup - just log the warning
+      console.warn('Continuing with signup despite health check failure...');
     }
 
     // Client-side validation
@@ -84,8 +92,14 @@ const Signup = ({ onOTPVerification }) => {
       });
 
       console.log('Signup response received:', response);
-      console.log('Response data:', response.data);
-      console.log('Response status:', response.status);
+      console.log('Response data:', response?.data);
+      console.log('Response status:', response?.status);
+      console.log('Full response object:', JSON.stringify(response, null, 2));
+
+      // Check if response exists and has data
+      if (!response || !response.data) {
+        throw new Error('No response from server');
+      }
 
       if (response.data.success && response.data.requiresOTP) {
         // Store token temporarily before OTP verification
