@@ -39,9 +39,14 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Mount routes
-app.use('/user', userRoutes);
-app.use('/otp', otpRoutes);
+// ✅ Basic request logging (before routes)
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+    next();
+});
+
+// ✅ Make sure Express handles preflight OPTIONS requests globally
+app.options('*', cors());
 
 // Add health check endpoint
 app.get('/health', async (req, res) => {
@@ -86,14 +91,9 @@ app.get('/health', async (req, res) => {
     }
 });
 
-// ✅ Make sure Express handles preflight OPTIONS requests globally
-app.options('*', cors());
-
-// ✅ Basic request logging
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-    next();
-});
+// Mount routes
+app.use('/user', userRoutes);
+app.use('/otp', otpRoutes);
 
 // ✅ Error handling middleware
 app.use((err, req, res, next) => {
